@@ -74,7 +74,7 @@ The important parts travel unchanged: **when to invoke**, **step-by-step agent b
 ## Quick start
 
 ```bash
-# 0. Docker on Toshiba (after reboot / re-plug)
+# 0. Docker on external drive (after reboot / re-plug)
 start-docker
 
 # 1. Env for compose substitution
@@ -126,8 +126,9 @@ Ports are fixed to avoid common local clashes. Do not renumber without a documen
 | Key Vault (lowkey-vault) | **8443** | `kv` | |
 | Qdrant | **6333** | `search` | |
 | AI Search emulator | **8800** | `search` | |
-| Fake SendGrid | **8095** | `mail` | |
-| fake-teams | **3979** | `teams` | |
+| Fake SendGrid | **8095** | `mail` | GET `/captured` to assert mail |
+| Fake Slack | **8096** | `slack` | UI `/ui` + GET `/messages` |
+| fake-teams | **3979** | `teams` | GET `/api/messages` |
 | echo-bot | **3978** | `teams` | |
 | sample_service | **18080** | `sample` | |
 
@@ -149,10 +150,19 @@ docker compose --profile aws --profile search up -d --build
 | `cosmos` | Cosmos DB vNext emulator (**8081**, **1234**) | Document DB / chat-history style clients |
 | `search` | Qdrant + Azure AI Search–shaped emulator (**6333**, **8800**) | `azure-search-documents` without a real AI Search resource |
 | `kv` | lowkey-vault on **8443** | Key Vault–aware apps (most can stay on `USE_KEY_VAULT=false`) |
-| `mail` | Fake SendGrid capture on **8095** | Outbound email without leaving the machine |
+| `mail` | Fake SendGrid capture on **8095** | Outbound email without leaving the machine; **see** via `GET /captured` |
+| `slack` | Fake Slack Web API on **8096** | Post/history/inject; **see** via `http://127.0.0.1:8096/ui` and `GET /messages` |
 | `ollama` | Dockerized Ollama for the bridge | Real local models from the compose network (Mac: often prefer host Ollama) |
-| `teams` | fake-teams + echo-bot (no M365 tenant, no tunnel) | Bot Framework / Teams activity development |
+| `teams` | fake-teams + echo-bot (no M365 tenant, no tunnel) | Bot Framework / Teams; **see** via `GET /api/messages` |
 | `sample` | Minimal in-repo FastAPI consumer on **18080** | Prove end-to-end wiring without another repo |
+
+### Seeing messages on fakes
+
+| Fake | How to inspect traffic in tests / browser |
+|------|-------------------------------------------|
+| **Slack** (`slack`) | http://127.0.0.1:8096/ui · `GET /messages` · history API |
+| **Teams** (`teams`) | `GET http://127.0.0.1:3979/api/messages` · transcript endpoints |
+| **SendGrid** (`mail`) | `GET http://127.0.0.1:8095/captured` |
 
 Profiles that are off show as `[--]` in `scripts/verify.sh` rather than failing the core gate. Connectivity tests for optional services **skip** when their port is down.
 

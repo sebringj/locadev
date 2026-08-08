@@ -5,7 +5,7 @@
 | `name` | string | no | Short label for this machine/setup |
 | `description` | string | no | Human note |
 | `requireExternalVolume` | bool | yes | If true, fail when `externalVolumePath` is missing |
-| `externalVolumePath` | string | if require | e.g. `/Volumes/toshiba` |
+| `externalVolumePath` | string | if require | e.g. `/Volumes/MyDrive` (your external drive mount) |
 | `sparsebundlePath` | string | yes* | Path to `.sparsebundle` (or `.dmg`) on the external drive |
 | `mountPoint` | string | yes | Where the APFS volume should appear, e.g. `/Volumes/DockerData` |
 | `dataFolder` | string | yes | Docker Desktop `dataFolder` (directory that will contain `Docker.raw`) |

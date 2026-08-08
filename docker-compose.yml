@@ -199,6 +199,19 @@ services:
         aliases:
           - sendgrid
 
+  # --- profile: slack ---
+  fake-slack:
+    profiles: ["slack"]
+    build: ./fake_slack
+    container_name: locadev-fake-slack
+    ports:
+      - "8096:8096"
+    networks:
+      locadev:
+        aliases:
+          - slack
+          - fake-slack
+
   # --- profile: ollama ---
   ollama:
     profiles: ["ollama"]

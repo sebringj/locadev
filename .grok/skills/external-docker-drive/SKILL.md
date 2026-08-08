@@ -3,7 +3,7 @@ name: external-docker-drive
 description: >
   Run Docker Desktop with its VM disk on an external drive (APFS sparsebundle or
   APFS volume) so the internal Mac SSD does not fill with images. Use when the
-  user mentions external docker drive, Toshiba docker, sparsebundle, Docker.raw
+  user mentions external docker drive, external drive docker, sparsebundle, Docker.raw
   location, start-docker, disk full from Docker, dataFolder, or /external-docker-drive.
   Config is JSON (not hardcoded paths) so any project or machine can reuse this.
 metadata:
@@ -45,7 +45,7 @@ See also `.grok/local/README.md`.
 
 ## FIRST: config missing or incomplete — WARN and instruct
 
-**Before** mounting volumes, changing Docker settings, or assuming Toshiba/paths:
+**Before** mounting volumes, changing Docker settings, or assuming fixed host paths:
 
 1. Resolve config with the discovery order below (prefer **local** paths).
 2. If **no file** is found, or required fields are missing (`mountPoint`, `dataFolder`, and either `sparsebundlePath` or an already-mounted APFS `mountPoint`):
@@ -116,11 +116,12 @@ If the user **does not want** an external drive, say so explicitly: they can kee
 Tracked example only: `config.example.json`. **Never commit** real machine paths in the skill body.
 
 When a valid **local** config is present: load it, then run `start-docker`.  
-When helping another machine: write **their** `.grok/local/...` from the example — do not assume Toshiba.## Operator CLI
+When helping another machine: write **their** `.grok/local/...` from the example — do not assume a particular external drive brand or mount name.
+
+## Operator CLI
 
 ```bash
 start-docker
-# aliases often: start-docker-toshiba · docker-toshiba
 # binary: ~/bin/start-docker  (reads the same JSON)
 ```
 
