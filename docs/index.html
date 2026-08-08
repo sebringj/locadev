@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>locadev - local cloud, no subscription</title>
+  <meta name="description" content="locadev is a drop-in local replacement for Azure and AWS cloud infrastructure. Env-only config, Docker Compose, free offline iteration." />
+  <meta property="og:title" content="locadev" />
+  <meta property="og:description" content="Drop-in local cloud for Azure + AWS. No subscription. Env-only client config." />
+  <meta property="og:image" content="./localdev-logo.jpg" />
+  <link rel="icon" href="./localdev-logo.jpg" type="image/jpeg" />
+  <!-- System fonts only (no CDN) so the page works offline and on GitHub Pages with no network deps -->
+  <style>
+    :root {
+      /* Matched to logo wordmark: Loca = orange, Dev = hot pink; skull accents cyan/green */
+      --bg: #050505;
+      --bg-elevated: #0c0c0e;
+      --bg-card: #121214;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
+      --accent: #ff9f1a;       /* Loca orange */
+      --accent-2: #ff2d95;     /* Dev hot pink */
+      --accent-3: #2ee6a6;     /* neon green eye */
+      --accent-cyan: #3ec9e6;  /* sugar-skull cyan */
+      --glow: rgba(255, 159, 26, 0.28);
+      --glow-pink: rgba(255, 45, 149, 0.22);
+      --radius: 16px;
+      --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 70% 45% at 50% -15%, rgba(255, 159, 26, 0.16), transparent 55%),
+        radial-gradient(ellipse 45% 40% at 100% 40%, rgba(255, 45, 149, 0.12), transparent 50%),
+        radial-gradient(ellipse 40% 35% at 0% 85%, rgba(62, 201, 230, 0.08), transparent 45%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+
+    /* nav */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 0;
+      gap: 1rem;
+    }
+
+    nav .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    nav .brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      object-fit: cover;
+      box-shadow: 0 0 0 1px var(--border);
+    }
+
+    nav .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      align-items: center;
+    }
+
+    nav a:not(.brand):not(.btn) {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    nav a:not(.brand):not(.btn):hover { color: var(--text); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.1rem;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      border: 1px solid transparent;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+
+    .btn-primary {
+      background: linear-gradient(115deg, var(--accent) 0%, #ff6b3d 40%, var(--accent-2) 100%);
+      color: #0a0a0a;
+      box-shadow: 0 4px 28px var(--glow), 0 2px 16px var(--glow-pink);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .btn-ghost:hover {
+      background: var(--bg-elevated);
+      border-color: rgba(148, 163, 184, 0.25);
+    }
+
+    /* hero */
+    .hero {
+      text-align: center;
+      padding: 2.5rem 0 3.5rem;
+    }
+
+    .hero-logo {
+      width: min(240px, 58vw);
+      height: auto;
+      border-radius: 28px;
+      margin: 0 auto 1.75rem;
+      display: block;
+      background: #000;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 24px 80px rgba(0, 0, 0, 0.55),
+        0 0 48px var(--glow),
+        0 0 72px var(--glow-pink);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: rgba(255, 159, 26, 0.1);
+      border: 1px solid rgba(255, 45, 149, 0.35);
+      margin-bottom: 1.25rem;
+    }
+
+    .badge::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 8px var(--accent-2);
+    }
+
+    h1 {
+      font-size: clamp(2.1rem, 5vw, 3.25rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    /* Same split as logo wordmark: Loca orange → Dev pink */
+    h1 .grad {
+      background: linear-gradient(105deg, var(--accent) 0%, #ff7a2e 35%, var(--accent-2) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-stroke: 0;
+      filter: drop-shadow(0 0 24px rgba(255, 45, 149, 0.25));
+    }
+
+    .wordmark {
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      font-size: 1.05em;
+    }
+    .wordmark .loca { color: var(--accent); }
+    .wordmark .dev { color: var(--accent-2); }
+
+    .hero p.lead {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 36rem;
+      margin: 0 auto 1.75rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .code-block {
+      display: inline-block;
+      text-align: left;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.85rem 1.15rem;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .code-block .cm { color: #71717a; }
+    .code-block .cmd { color: var(--accent); }
+    .code-block .cmd2 { color: var(--accent-2); }
+
+    /* sections */
+    section {
+      margin-bottom: 3.5rem;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-lead {
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      max-width: 40rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.35rem;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+
+    .card:hover {
+      border-color: rgba(255, 45, 149, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(255, 159, 26, 0.08);
+    }
+
+    .card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card p {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .icon {
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .icon-blue { background: rgba(62, 201, 230, 0.15); color: var(--accent-cyan); }
+    .icon-violet { background: rgba(255, 45, 149, 0.14); color: var(--accent-2); }
+    .icon-green { background: rgba(46, 230, 166, 0.14); color: var(--accent-3); }
+    .icon-amber { background: rgba(255, 159, 26, 0.14); color: var(--accent); }
+
+    /* table */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-card);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    td code, .mono {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--accent);
+    }
+
+    td code.pink { color: var(--accent-2); }
+
+    /* steps */
+    .steps {
+      display: grid;
+      gap: 1rem;
+      counter-reset: step;
+    }
+
+    @media (min-width: 720px) {
+      .steps { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      position: relative;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      display: flex;
+      width: 1.75rem;
+      height: 1.75rem;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: linear-gradient(115deg, var(--accent), var(--accent-2));
+      color: #0a0a0a;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .step h3 {
+      font-size: 1rem;
+      margin-bottom: 0.35rem;
+    }
+
+    .step p {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .step code {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+    }
+
+    /* honesty */
+    .callout {
+      border-radius: var(--radius);
+      border: 1px solid rgba(251, 191, 36, 0.25);
+      background: rgba(251, 191, 36, 0.06);
+      padding: 1.25rem 1.5rem;
+    }
+
+    .callout h2 {
+      font-size: 1.1rem;
+      color: #fbbf24;
+      margin-bottom: 0.5rem;
+    }
+
+    .callout p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0 1rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--accent-2);
+      text-decoration: none;
+    }
+
+    footer a:first-of-type {
+      color: var(--accent);
+    }
+
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 560px) {
+      nav .links a:not(.btn) { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <nav>
+      <a class="brand" href="#">
+        <img src="./localdev-logo.jpg" alt="LocaDev" width="36" height="36" />
+        <span class="wordmark"><span class="loca">Loca</span><span class="dev">Dev</span></span>
+      </a>
+      <div class="links">
+        <a href="#features">Features</a>
+        <a href="#profiles">Profiles</a>
+        <a href="#start">Quick start</a>
+        <a class="btn btn-ghost" href="../README.md">README</a>
+        <a class="btn btn-primary" href="#start">Get started</a>
+      </div>
+    </nav>
+
+    <header class="hero">
+      <img class="hero-logo" src="./localdev-logo.jpg" alt="LocaDev logo" width="220" height="220" />
+      <div class="badge">Azure · AWS · offline</div>
+      <h1>Local cloud without the<br /><span class="grad">cloud bill</span></h1>
+      <p class="lead">
+        Drop-in Docker stack that presents the same API shapes and SDK contracts as
+        real cloud services. Point any app at locadev by <strong>changing env values only</strong> —
+        no code changes, no subscription, no tunnel.
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="#start">Quick start</a>
+        <a class="btn btn-ghost" href="../README.md">Full README</a>
+      </div>
+      <div class="code-block">
+        <span class="cm"># after Docker is ready</span><br />
+        <span class="cmd">make</span> up &amp;&amp; <span class="cmd2">make</span> verify<br />
+        <span class="cm"># optional: DaisyUI playground</span><br />
+        <span class="cmd">make</span> <span class="cmd2">playground</span>
+      </div>
+    </header>
+
+    <section id="features">
+      <h2>Built for real client apps</h2>
+      <p class="section-lead">
+        Same SDKs you use in production — Azure Storage, Service Bus, OpenAI client,
+        PGlite SQL, Redis, Topaz RBAC, and more behind profiles.
+      </p>
+      <div class="grid">
+        <article class="card">
+          <h3><span class="icon icon-blue">⚙</span> Env-only swap</h3>
+          <p>Consumer contract is connection strings and endpoints. Move to a real cloud later with a value swap.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-violet">☁</span> Azure surface</h3>
+          <p>Azurite, Service Bus emulator, Foundry-shaped OpenAI bridge, optional Cosmos, AI Search, Key Vault.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-green">⬡</span> AWS surface</h3>
+          <p>MiniStack on :4566 for S3-compatible local testing with seed data and boto3 endpoint_url.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-amber">▣</span> Pick profiles</h3>
+          <p>Core stack is lean; spin up teams, slack, mail, search, cosmos, and more only when you need them.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-blue">◆</span> Fake channels</h3>
+          <p>Fake Teams, Slack, and SendGrid with ways to <em>see</em> messages — UI, JSON capture, test hooks.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-violet">◎</span> Demos &amp; playground</h3>
+          <p>CLI demos plus a DaisyUI web playground that exercises blob, bus, bridge, PGlite, Redis, and Topaz.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="profiles">
+      <h2>Compose profiles</h2>
+      <p class="section-lead">Core always runs. Optional services stay behind profiles so your laptop stays light.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Profile</th>
+              <th>What you get</th>
+              <th>Port</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>core</code></td><td>Azurite, Service Bus, bridge, PGlite, Topaz, Redis</td><td>—</td></tr>
+            <tr><td><code>aws</code></td><td>MiniStack S3 gateway</td><td>4566</td></tr>
+            <tr><td><code>search</code></td><td>Qdrant + AI Search emulator</td><td>8800</td></tr>
+            <tr><td><code>cosmos</code></td><td>Cosmos DB vNext emulator</td><td>8081</td></tr>
+            <tr><td><code>mail</code></td><td>Fake SendGrid (+ <code>/captured</code>)</td><td>8095</td></tr>
+            <tr><td><code>slack</code></td><td>Fake Slack Web API (+ <code>/ui</code>)</td><td>8096</td></tr>
+            <tr><td><code>teams</code></td><td>Fake Teams + echo bot</td><td>3979</td></tr>
+            <tr><td><code>sample</code></td><td>In-repo FastAPI consumer</td><td>18080</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="start">
+      <h2>Quick start</h2>
+      <p class="section-lead">macOS / Linux with Docker Compose v2. Full detail lives in the repo README.</p>
+      <div class="steps">
+        <div class="step">
+          <h3>Clone &amp; env</h3>
+          <p><code>cp .env.example .env</code></p>
+        </div>
+        <div class="step">
+          <h3>Bring up core</h3>
+          <p><code>make up && make verify</code></p>
+        </div>
+        <div class="step">
+          <h3>Point your app</h3>
+          <p>Copy values from <code>sandbox.env.example</code> into the client repo.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="callout">
+        <h2>Honest by design</h2>
+        <p>
+          locadev is an <strong>interim</strong> local stand-in, not a full isolated subscription.
+          Topaz ≠ Entra RBAC; PGlite ≠ multi-writer Postgres; AI Search filters are partial.
+          Limitations are documented so you find them here — not at runtime in staging.
+        </p>
+      </div>
+    </section>
+
+    <footer>
+      <p>
+        <strong class="wordmark"><span class="loca">Loca</span><span class="dev">Dev</span></strong>
+        · open source local cloud stack ·
+        <a href="../README.md">README</a>
+      </p>
+      <p style="margin-top: 0.5rem; opacity: 0.7;">Env-only. Offline. No subscription.</p>
+    </footer>
+  </div>
+</body>
+</html>

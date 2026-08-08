@@ -27,6 +27,11 @@ logs:
 harness:
 	. .venv/bin/activate 2>/dev/null; python3 bridge/harness.py
 
+# Static GitHub Pages site → http://127.0.0.1:8088
+site:
+	@echo "Open http://127.0.0.1:8088/"
+	python3 -m http.server 8088 --directory docs
+
 # DaisyUI web playground (host-side) → http://127.0.0.1:19191
 playground:
 	@if [ ! -d demos/playground/.venv ]; then python3 -m venv demos/playground/.venv; fi

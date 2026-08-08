@@ -1,5 +1,15 @@
 # locadev
 
+<p align="center">
+  <img src="localdev-logo.jpg" alt="locadev logo" width="280" />
+</p>
+
+<p align="center">
+  <strong>Site:</strong> <code>docs/index.html</code>
+  · preview: <code>python3 -m http.server 8088 --directory docs</code>
+  · GitHub Pages: Settings → Pages → branch folder <code>/docs</code>
+</p>
+
 **locadev** is a drop-in local replacement for cloud infrastructure. Point any app that talks to Azure, AWS, or (later) other clouds at this stack by **changing env values only** — no code changes, no cloud subscription, no tunnel. Run `docker compose up`, pick the services you need, and develop offline against the same SDK contracts your production clients already use.
 
 Today the surface covers **Azure** and **AWS**. More platforms and services will land as profiles when there is demand. This is an **interim** local stand-in, not a full isolated subscription: you trade some cloud fidelity for free, offline, instant iteration.
