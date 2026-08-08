@@ -5,9 +5,13 @@
 </p>
 
 <p align="center">
-  <strong>Site:</strong> <code>docs/index.html</code>
+  <a href="https://github.com/sebringj/locadev"><img src="https://img.shields.io/badge/GitHub-sebringj%2Flocadev-181717?logo=github&logoColor=white" alt="GitHub sebringj/locadev" /></a>
+</p>
+
+<p align="center">
+  <strong>Repo:</strong> <a href="https://github.com/sebringj/locadev">github.com/sebringj/locadev</a>
+  · <strong>Site:</strong> <code>docs/index.html</code> (Pages or custom subdomain)
   · preview: <code>python3 -m http.server 8088 --directory docs</code>
-  · GitHub Pages: Settings → Pages → branch folder <code>/docs</code>
 </p>
 
 **You type. AI runs the rest.** Full AI workflow + local cloud on your desk.

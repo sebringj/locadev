@@ -2,6 +2,10 @@
 
 Static landing page for **locadev**.
 
+**Source of truth (always link here):** [github.com/sebringj/locadev](https://github.com/sebringj/locadev)
+
+The site may be served from **GitHub Pages** or a **custom subdomain**. The page uses **absolute GitHub URLs** (clone, README, issues, boards/hooks docs) so a pretty domain never looks like a disconnected product without a repo.
+
 **Positioning:** *You type. AI runs the rest.* — full AI workflow (gather via **browser skills** → clarify in Slack/Discord/Teams → **Jira + ADO boards** → `gh` PRs) + desk-hosted local cloud + **pre/post hooks**.
 
 | Doc | Topic |
@@ -10,7 +14,7 @@ Static landing page for **locadev**.
 | [../boards/README.md](../boards/README.md) | Jira + Azure DevOps |
 | [../hooks/README.md](../hooks/README.md) | Pre/post grounding |
 
-No build step — pure HTML/CSS + logo.
+No build step — pure HTML/CSS + logo + **inline GitHub mark SVG** (no CDN).
 
 ## Preview locally (this works even before GitHub Pages)
 
@@ -46,13 +50,19 @@ If the browser says **failed to load page**:
 4. **Branch:** `main` (or default), folder: **`/docs`**  
 5. Save  
 
-Site URL:
+Default Pages URL:
 
 ```text
-https://<username>.github.io/<repo-name>/
+https://sebringj.github.io/locadev/
 ```
 
-Example: repo `you/locadev` → `https://you.github.io/locadev/`
+### Custom subdomain
+
+In the repo **Settings → Pages → Custom domain**, set your subdomain (e.g. `locadev.example.com`) and add the DNS CNAME GitHub shows. Optional: `docs/CNAME` file with that host.
+
+The landing page already labels itself as the **product page** and points clone/issues/docs at **github.com/sebringj/locadev** so visitors aren’t stranded on a logo-only domain.
+
+If the GitHub org/user ever renames, update absolute links in `docs/index.html` (search `sebringj/locadev`).
 
 ## Files
 
