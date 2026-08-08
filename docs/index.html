@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>locadev - local cloud, no subscription</title>
-  <meta name="description" content="locadev is a drop-in local replacement for Azure and AWS cloud infrastructure. Env-only config, Docker Compose, free offline iteration." />
-  <meta property="og:title" content="locadev" />
-  <meta property="og:description" content="Drop-in local cloud for Azure + AWS. No subscription. Env-only client config." />
+  <title>locadev — you type, AI runs the rest</title>
+  <meta name="description" content="Full AI workflow: gather &amp; clarify (Slack/Discord/Teams), update Jira and Azure DevOps boards, ship with gh — local Azure/AWS-shaped cloud on your desk. Pre/post hooks ground decisions in citations before ready." />
+  <meta property="og:title" content="locadev — full AI workflow, local cloud" />
+  <meta property="og:description" content="You type. AI gathers, clarifies in-channel, updates Jira/ADO boards, opens PRs with gh. Local cloud + grounded hooks." />
   <meta property="og:image" content="./localdev-logo.jpg" />
   <link rel="icon" href="./localdev-logo.jpg" type="image/jpeg" />
   <!-- System fonts only (no CDN) so the page works offline and on GitHub Pages with no network deps -->
@@ -452,9 +452,12 @@
         <span class="wordmark"><span class="loca">Loca</span><span class="dev">Dev</span></span>
       </a>
       <div class="links">
-        <a href="#features">Features</a>
+        <a href="#workflow">Workflow</a>
+        <a href="#boards">Boards</a>
+        <a href="#browser">Browser</a>
+        <a href="#hooks">Hooks</a>
         <a href="#profiles">Profiles</a>
-        <a href="#start">Quick start</a>
+        <a href="#start">Start</a>
         <a class="btn btn-ghost" href="../README.md">README</a>
         <a class="btn btn-primary" href="#start">Get started</a>
       </div>
@@ -462,62 +465,159 @@
 
     <header class="hero">
       <img class="hero-logo" src="./localdev-logo.jpg" alt="LocaDev logo" width="220" height="220" />
-      <div class="badge">Azure · AWS · offline</div>
-      <h1>Local cloud without the<br /><span class="grad">cloud bill</span></h1>
+      <div class="badge">you type · AI runs the rest · grounded</div>
+      <h1>Full AI workflow.<br /><span class="grad">Local cloud included.</span></h1>
       <p class="lead">
-        Drop-in Docker stack that presents the same API shapes and SDK contracts as
-        real cloud services. Point any app at locadev by <strong>changing env values only</strong> —
-        no code changes, no subscription, no tunnel.
+        <strong class="wordmark"><span class="loca">Loca</span><span class="dev">Dev</span></strong>
+        is the loop where the agent does almost everything: <strong>gather</strong> requirements,
+        <strong>clarify</strong> them in Slack / Discord / Teams, update
+        <strong>Jira</strong> and <strong>Azure DevOps</strong> boards,
+        open PRs with <strong><code>gh</code></strong>, and exercise
+        <strong>desk-hosted Azure &amp; AWS–shaped resources</strong> — while
+        <strong>pre/post hooks</strong> refuse decisions and “ready” without citations and receipts.
+        You type. You approve. The machine ships the busywork.
       </p>
       <div class="hero-actions">
-        <a class="btn btn-primary" href="#start">Quick start</a>
-        <a class="btn btn-ghost" href="../README.md">Full README</a>
+        <a class="btn btn-primary" href="#workflow">See the loop</a>
+        <a class="btn btn-ghost" href="../boards/README.md">Jira + ADO boards</a>
       </div>
       <div class="code-block">
-        <span class="cm"># after Docker is ready</span><br />
+        <span class="cm"># ground → decide → build → prove ready</span><br />
+        <span class="cmd">./hooks/pre-decision.sh</span><br />
         <span class="cmd">make</span> up &amp;&amp; <span class="cmd2">make</span> verify<br />
-        <span class="cm"># optional: DaisyUI playground</span><br />
-        <span class="cmd">make</span> <span class="cmd2">playground</span>
+        <span class="cmd">./hooks/post-ready.sh</span>
       </div>
     </header>
 
-    <section id="features">
-      <h2>Built for real client apps</h2>
+    <section id="workflow">
+      <h2>The whole party (AI-driven)</h2>
       <p class="section-lead">
-        Same SDKs you use in production — Azure Storage, Service Bus, OpenAI client,
-        PGlite SQL, Redis, Topaz RBAC, and more behind profiles.
+        End-to-end automation except the human at the keyboard. Assumes a coding agent plus
+        <code>gh</code> / GitHub, <strong>Jira and/or Azure DevOps</strong>, and channel bots —
+        local fakes for practice, real APIs for work.
       </p>
       <div class="grid">
         <article class="card">
-          <h3><span class="icon icon-blue">⚙</span> Env-only swap</h3>
-          <p>Consumer contract is connection strings and endpoints. Move to a real cloud later with a value swap.</p>
+          <h3><span class="icon icon-amber">1</span> Gather</h3>
+          <p><strong>/web-requirements</strong> — AI plans, then browses. Signed-in pages: <strong>/chrome-debug-profile</strong> (CDP). Snapshots become citations; invent later.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-violet">☁</span> Azure surface</h3>
-          <p>Azurite, Service Bus emulator, Foundry-shaped OpenAI bridge, optional Cosmos, AI Search, Key Vault.</p>
+          <h3><span class="icon icon-violet">2</span> Clarify in-channel</h3>
+          <p>Open questions go to <strong>Slack, Discord, or Teams</strong> — same shapes as production. Local fakes expose <code>/ui</code> and <code>/messages</code> so you can see the thread.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-green">⬡</span> AWS surface</h3>
-          <p>MiniStack on :4566 for S3-compatible local testing with seed data and boto3 endpoint_url.</p>
+          <h3><span class="icon icon-blue">3</span> Ticket the truth</h3>
+          <p>Update <strong>Jira</strong> and/or <strong>Azure DevOps Boards</strong> (state, comments, acceptance) from channel + docs — via <code>./boards/board.sh</code>.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-amber">▣</span> Pick profiles</h3>
-          <p>Core stack is lean; spin up teams, slack, mail, search, cosmos, and more only when you need them.</p>
+          <h3><span class="icon icon-green">4</span> Ship with <code>gh</code></h3>
+          <p>Assumes <strong>GitHub CLI</strong> is installed and authed: branches, PRs, checks, reviews — agent-driven, human-approved.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-blue">◆</span> Fake channels</h3>
-          <p>Fake Teams, Slack, and SendGrid with ways to <em>see</em> messages — UI, JSON capture, test hooks.</p>
+          <h3><span class="icon icon-violet">5</span> Local cloud buffet</h3>
+          <p>Summon only the Azure/AWS-shaped bits you need: blobs, bus, SQL, Redis, Functions-style workers, S3, mail, channel fakes — env-only wiring.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-violet">◎</span> Demos &amp; playground</h3>
-          <p>CLI demos plus a DaisyUI web playground that exercises blob, bus, bridge, PGlite, Redis, and Topaz.</p>
+          <h3><span class="icon icon-green">6</span> Grounded “ready”</h3>
+          <p><strong>Pre-hooks</strong> demand citations (<code>jira:KEY</code>, <code>ado:#id</code>). <strong>Post-hooks</strong> demand verify/tests/board/PR receipts.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="boards">
+      <h2>Jira + Azure DevOps</h2>
+      <p class="section-lead">
+        First-class work boards. Config in <code>.grok/local/boards.json</code>; tokens in env only.
+        Details: <a href="../boards/README.md" style="color: var(--accent-2);">boards/README.md</a>.
+      </p>
+      <div class="grid">
+        <article class="card">
+          <h3><span class="icon icon-blue">Jira</span></h3>
+          <p>Cloud/Server REST: get, comment, transition, JQL search. Cite as <code>jira:PROJ-123</code>. Token: <code>JIRA_API_TOKEN</code>.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-violet">ADO</span></h3>
+          <p>Azure DevOps work items: get, comment, state patch, WIQL search. Cite as <code>ado:#42</code>. PAT: <code>AZURE_DEVOPS_EXT_PAT</code>.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-amber">CLI</span></h3>
+          <p><code>./boards/board.sh providers|get|comment|transition|search|url</code> — auto-detects key shape; <code>--provider</code> to force.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="hooks">
+      <h2>Pre / post hooks (no hopium)</h2>
+      <p class="section-lead">
+        Big choices and “we’re done” both fail closed without grounding. Protocol lives in
+        <a href="../hooks/README.md" style="color: var(--accent-2);">hooks/</a>.
+      </p>
+      <div class="grid">
+        <article class="card">
+          <h3><span class="icon icon-amber">⚓</span> Pre-decision</h3>
+          <p>Before architecture, board rewrites, or committing work: cite docs, channel messages, <code>jira:</code>/<code>ado:</code> keys, or repo paths. <code>./hooks/pre-decision.sh</code></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-green">✓</span> Post-ready</h3>
+          <p>Before “ready for review”: verify, tests, Jira/ADO update, <code>gh</code> PR evidence. <code>./hooks/post-ready.sh</code></p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-blue">📎</span> Citations = truth</h3>
+          <p>Empty sources fail the gate. Conflict? Ask the channel again — don’t assume and ship.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="features">
+      <h2>What the desk runs</h2>
+      <p class="section-lead">
+        Same SDK shapes as production. Env-only costume change when you finally go real-cloud.
+      </p>
+      <div class="grid">
+        <article class="card">
+          <h3><span class="icon icon-violet">☁</span> Azure cosplay</h3>
+          <p>Azurite, Service Bus, Foundry-shaped bridge, optional Cosmos &amp; AI Search, Key Vault, sample Functions on Azurite.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-green">⬡</span> AWS cosplay</h3>
+          <p>MiniStack S3 on :4566. <code>endpoint_url</code>, test keys, no surprise invoice.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-blue">💬</span> Channel cosplay</h3>
+          <p>Fake Slack / Discord / Teams so agents can post clarifications and you can <em>see</em> the messages land.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-amber">✅</span> Receipts, not vibes</h3>
+          <p>Playground, demos, captured mail, message UIs — so “it works” survives a demo. UI changes: <strong>/playwright</strong> e2e for post-ready.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="browser">
+      <h2>Browser skills (what they mean)</h2>
+      <p class="section-lead">
+        Three different jobs — don’t mix them up.
+        Full map: <a href="./browser-skills.md" style="color: var(--accent-2);">docs/browser-skills.md</a>.
+      </p>
+      <div class="grid">
+        <article class="card">
+          <h3><span class="icon icon-amber">📋</span> web-requirements</h3>
+          <p><strong>Research the product.</strong> AI-first plan, then Playwright snapshots → requirements doc under <code>.grok/local/requirements/</code>. Feeds pre-decision citations.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-violet">🔐</span> chrome-debug-profile</h3>
+          <p><strong>Your logged-in session.</strong> Profile work-copy + CDP on <code>:9222</code>. Use when docs/admin UIs need SSO — not for CI e2e.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-green">🧪</span> playwright</h3>
+          <p><strong>Prove the UI you built.</strong> Clean Chromium e2e after implement. Post-ready receipt — not a requirements substitute.</p>
         </article>
       </div>
     </section>
 
     <section id="profiles">
-      <h2>Compose profiles</h2>
-      <p class="section-lead">Core always runs. Optional services stay behind profiles so your laptop stays light.</p>
+      <h2>Pick your power-ups</h2>
+      <p class="section-lead">Core stays light. Profiles are optional loot — equip only what this run needs.</p>
       <div class="table-wrap">
         <table>
           <thead>
@@ -533,8 +633,10 @@
             <tr><td><code>search</code></td><td>Qdrant + AI Search emulator</td><td>8800</td></tr>
             <tr><td><code>cosmos</code></td><td>Cosmos DB vNext emulator</td><td>8081</td></tr>
             <tr><td><code>mail</code></td><td>Fake SendGrid (+ <code>/captured</code>)</td><td>8095</td></tr>
-            <tr><td><code>slack</code></td><td>Fake Slack Web API (+ <code>/ui</code>)</td><td>8096</td></tr>
-            <tr><td><code>teams</code></td><td>Fake Teams + echo bot</td><td>3979</td></tr>
+            <tr><td><code>slack</code></td><td>Fake Slack Web API (+ <code>/ui</code>) — clarify in-channel</td><td>8096</td></tr>
+            <tr><td><code>discord</code></td><td>Fake Discord REST (+ <code>/ui</code>) — clarify in-channel</td><td>8097</td></tr>
+            <tr><td><code>functions</code></td><td>Azure Functions runtime + sample (Azurite storage)</td><td>7071</td></tr>
+            <tr><td><code>teams</code></td><td>Fake Teams + echo bot — clarify in-channel</td><td>3979</td></tr>
             <tr><td><code>sample</code></td><td>In-repo FastAPI consumer</td><td>18080</td></tr>
           </tbody>
         </table>
@@ -542,31 +644,31 @@
     </section>
 
     <section id="start">
-      <h2>Quick start</h2>
-      <p class="section-lead">macOS / Linux with Docker Compose v2. Full detail lives in the repo README.</p>
+      <h2>Start the machine</h2>
+      <p class="section-lead">macOS / Linux + Docker Compose v2. Agent toolchain: coding agent, <code>gh</code>, Jira and/or ADO, channel access. README has the deep lore.</p>
       <div class="steps">
         <div class="step">
-          <h3>Clone &amp; env</h3>
-          <p><code>cp .env.example .env</code></p>
+          <h3>1 · Tool up</h3>
+          <p>Agent host + <code>gh auth</code> + boards config (<code>.grok/local/boards.json</code>) + Slack/Discord/Teams (or local profiles).</p>
         </div>
         <div class="step">
-          <h3>Bring up core</h3>
-          <p><code>make up && make verify</code></p>
+          <h3>2 · Summon cloud</h3>
+          <p><code>make up && make verify</code> — desk-hosted resources on localhost; wire from <code>sandbox.env.example</code>.</p>
         </div>
         <div class="step">
-          <h3>Point your app</h3>
-          <p>Copy values from <code>sandbox.env.example</code> into the client repo.</p>
+          <h3>3 · Loop with hooks</h3>
+          <p>Gather → clarify → Jira/ADO → code → <code>pre-decision</code> / <code>post-ready</code> → PR. You type; AI drives.</p>
         </div>
       </div>
     </section>
 
     <section>
       <div class="callout">
-        <h2>Honest by design</h2>
+        <h2>Not magic — just honest</h2>
         <p>
-          locadev is an <strong>interim</strong> local stand-in, not a full isolated subscription.
-          Topaz ≠ Entra RBAC; PGlite ≠ multi-writer Postgres; AI Search filters are partial.
-          Limitations are documented so you find them here — not at runtime in staging.
+          Local cloud is a <strong>sidekick</strong>, not a free Azure/AWS subscription in a trench coat.
+          Topaz ≠ Entra. PGlite ≠ multi-writer Postgres. AI Search is partial.
+          Hooks force citations so the AI doesn’t paper over those gaps — or invent requirements.
         </p>
       </div>
     </section>
@@ -574,10 +676,16 @@
     <footer>
       <p>
         <strong class="wordmark"><span class="loca">Loca</span><span class="dev">Dev</span></strong>
-        · open source local cloud stack ·
+        · you type · AI runs the rest ·
         <a href="../README.md">README</a>
+        ·
+        <a href="../boards/README.md">boards</a>
+        ·
+        <a href="../hooks/README.md">hooks</a>
       </p>
-      <p style="margin-top: 0.5rem; opacity: 0.7;">Env-only. Offline. No subscription.</p>
+      <p style="margin-top: 0.5rem; opacity: 0.7;">
+        Gather · clarify · Jira/ADO · code · ground · ready
+      </p>
     </footer>
   </div>
 </body>

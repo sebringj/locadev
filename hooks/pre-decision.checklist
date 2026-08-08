@@ -1,0 +1,20 @@
+# Pre-decision grounding checklist
+# Fill before architecture choices, ticket rewrites, or committing work.
+# Agents: attach this (or equivalent) + run ./hooks/pre-decision.sh
+
+## Decision (one sentence)
+-
+
+## Citations (at least one primary; prefer 2+)
+- [ ] Web/docs URL + relevant quote or snapshot path:
+- [ ] Channel (Slack/Discord/Teams) ref or local /messages dump:
+- [ ] Jira (`jira:KEY`) / ADO (`ado:#id`) / GitHub issue + current state:
+- [ ] Repo path (spec/README/code) + what it proves:
+- [ ] Local cloud evidence (verify/playground/logs) if stack-related:
+
+## Conflicts / unknowns
+- Open questions (will ask channel if needed):
+-
+
+## Gate
+- [ ] I will not implement or update tickets/PRs until citations above are real

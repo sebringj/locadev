@@ -19,4 +19,16 @@ cp .grok/skills/external-docker-drive/config.example.json \
 start-docker
 ```
 
+## boards (Jira + Azure DevOps)
+
+```bash
+cp boards/config.example.json .grok/local/boards.json
+# edit org / project / email / project_key — tokens stay in env:
+#   export JIRA_API_TOKEN=…
+#   export AZURE_DEVOPS_EXT_PAT=…
+./boards/board.sh providers
+```
+
+See `boards/README.md`.
+
 This directory’s contents (except this README) are **gitignored**.

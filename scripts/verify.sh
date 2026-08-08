@@ -62,6 +62,8 @@ check "Key Vault" 8443 0
 check "AI Search" 8800 0
 check "Mail (SendGrid)" 8095 0
 check "fake-slack" 8096 0
+check "fake-discord" 8097 0
+check "Azure Functions" 7071 0
 check "fake-teams" 3979 0
 check "sample_service" 18080 0
 

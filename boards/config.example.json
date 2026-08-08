@@ -1,0 +1,21 @@
+{
+  "$schema_note": "Copy to .grok/local/boards.json (gitignored). Never commit tokens.",
+  "default_provider": "jira",
+  "jira": {
+    "enabled": true,
+    "base_url": "https://YOUR_ORG.atlassian.net",
+    "email": "you@example.com",
+    "api_token_env": "JIRA_API_TOKEN",
+    "project_key": "PROJ",
+    "board_id": null,
+    "cloud": true
+  },
+  "ado": {
+    "enabled": true,
+    "org": "YOUR_ORG",
+    "project": "YOUR_PROJECT",
+    "pat_env": "AZURE_DEVOPS_EXT_PAT",
+    "team": null,
+    "base_url": "https://dev.azure.com"
+  }
+}

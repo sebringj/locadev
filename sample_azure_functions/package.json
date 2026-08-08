@@ -1,0 +1,16 @@
+{
+  "name": "sample-azure-functions",
+  "version": "1.0.0",
+  "description": "sample_azure_functions — Azure Functions–style sample using Azurite (locadev). Also runnable under real Functions Core Tools.",
+  "main": "src/index.js",
+  "private": true,
+  "scripts": {
+    "start": "node server.mjs",
+    "start:func": "func start --javascript"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.6.0",
+    "@azure/storage-queue": "^12.24.0",
+    "express": "^4.21.2"
+  }
+}

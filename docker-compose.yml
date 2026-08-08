@@ -212,6 +212,19 @@ services:
           - slack
           - fake-slack
 
+  # --- profile: discord ---
+  fake-discord:
+    profiles: ["discord"]
+    build: ./fake_discord
+    container_name: locadev-fake-discord
+    ports:
+      - "8097:8097"
+    networks:
+      locadev:
+        aliases:
+          - discord
+          - fake-discord
+
   # --- profile: ollama ---
   ollama:
     profiles: ["ollama"]
@@ -288,3 +301,25 @@ services:
       - bridge
     networks:
       - locadev
+
+  # --- profile: functions ---
+  # sample_azure_functions: Functions-style host + sample HTTP/queue → Azurite.
+  # Native multi-arch (node:20); full Microsoft host via func start on the Docker host.
+  functions:
+    profiles: ["functions"]
+    build: ./sample_azure_functions
+    container_name: locadev-sample-azure-functions
+    ports:
+      - "7071:80"
+    environment:
+      FUNCTIONS_WORKER_RUNTIME: node
+      AzureWebJobsFeatureFlags: EnableWorkerIndexing
+      AzureWebJobsSecretStorageType: files
+      # Inside the locadev network Azurite listens on 10000/10001/10002 (queue is NOT host 10101)
+      AzureWebJobsStorage: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;QueueEndpoint=http://azurite:10001/devstoreaccount1;TableEndpoint=http://azurite:10002/devstoreaccount1;"
+    depends_on:
+      - azurite
+    networks:
+      locadev:
+        aliases:
+          - functions

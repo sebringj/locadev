@@ -10,9 +10,102 @@
   · GitHub Pages: Settings → Pages → branch folder <code>/docs</code>
 </p>
 
-**locadev** is a drop-in local replacement for cloud infrastructure. Point any app that talks to Azure, AWS, or (later) other clouds at this stack by **changing env values only** — no code changes, no cloud subscription, no tunnel. Run `docker compose up`, pick the services you need, and develop offline against the same SDK contracts your production clients already use.
+**You type. AI runs the rest.** Full AI workflow + local cloud on your desk.
 
-Today the surface covers **Azure** and **AWS**. More platforms and services will land as profiles when there is demand. This is an **interim** local stand-in, not a full isolated subscription: you trade some cloud fidelity for free, offline, instant iteration.
+**locadev** is the loop where a coding agent does almost everything except the keyboard:
+
+1. **Gather** requirements (docs, UIs, signed-in browse)
+2. **Clarify** open questions in **Slack / Discord / Teams** (local fakes or real workspaces)
+3. **Update boards** — **Jira** and/or **Azure DevOps (ADO)** work items (plus GitHub issues when that’s the tracker)
+4. **Ship with `gh`** (PRs, checks — assumes GitHub CLI installed & authed)
+5. **Summon local Azure/AWS-shaped resources** in Docker (env-only client wiring)
+6. **Pre/post hooks** — no big decisions and no “ready” without **citations and receipts**
+
+You approve; the agent drives. Desk-hosted cloud sidekick means free offline iteration first, real cloud later. Same SDK shapes; swap env when you go live.
+
+Surfaces today: **Azure**, **AWS**, channel fakes, **Jira + ADO boards CLI**, more via profiles. You trade some fidelity for instant iteration — and we stay honest about the gaps. Hooks exist so the AI cannot paper over them.
+
+| Piece | Where |
+|-------|--------|
+| Landing page | `docs/index.html` |
+| Hooks protocol | [`hooks/README.md`](hooks/README.md) |
+| Work boards (Jira + ADO) | [`boards/README.md`](boards/README.md) · `./boards/board.sh` |
+| Browser skills (gather / e2e) | [`docs/browser-skills.md`](docs/browser-skills.md) |
+| Agent rules | [`AGENTS.md`](AGENTS.md) |
+
+---
+
+## AI workflow (agent-driven)
+
+```text
+  you type ──► gather reqs ──► clarify (Slack/Discord/Teams)
+                    │                    │
+                    ▼                    ▼
+              pre-decision ◄── citations (docs, msgs, tickets)
+                    │
+                    ▼
+         implement + local cloud (make up / verify)
+                    │
+                    ▼
+         post-ready ◄── receipts (tests, verify, Jira|ADO, gh PR)
+                    │
+                    ▼
+              say ready / open PR
+```
+
+### Work boards (Jira + Azure DevOps)
+
+Both providers are first-class. Config is local; tokens stay in env.
+
+```bash
+cp boards/config.example.json .grok/local/boards.json   # edit org/project/email
+export JIRA_API_TOKEN=…              # Atlassian API token
+export AZURE_DEVOPS_EXT_PAT=…        # ADO PAT (Work Items R/W)
+
+./boards/board.sh providers
+./boards/board.sh get PROJ-123                 # Jira
+./boards/board.sh get 42 --provider ado        # ADO work item
+./boards/board.sh comment PROJ-123 "Clarified in #dev"
+./boards/board.sh transition 42 --provider ado "Active"
+```
+
+Citation tokens for hooks: `jira:PROJ-123`, `ado:#42`. Full protocol: **`boards/README.md`**.
+
+### Toolchain assumptions
+
+Warn if missing; do not invent credentials.
+
+| Tool | Role |
+|------|------|
+| Coding agent (Grok / Claude / Cursor / …) | Drives the loop |
+| **`gh`** + GitHub auth | Issues, PRs, checks |
+| **Jira** and/or **Azure DevOps Boards** | Work items via `./boards/board.sh` (or `jira` / `az boards`) |
+| **Slack / Discord / Teams** | Clarify requirements in-channel |
+| **Docker + this repo** | Local cloud + channel fakes |
+| **Browser skills** (optional but key for gather) | See [`docs/browser-skills.md`](docs/browser-skills.md) |
+| → `web-requirements` | AI-first requirements from live docs/UIs |
+| → `chrome-debug-profile` | Signed-in Chrome via CDP when pages need your login |
+| → `playwright` | E2E UI proof after implement (clean browser) |
+
+Local channel practice (message-visible):
+
+| Profile | See traffic |
+|---------|-------------|
+| `slack` | http://127.0.0.1:8096/ui · `GET /messages` |
+| `discord` | http://127.0.0.1:8097/ui · `GET /messages` |
+| `teams` | `GET http://127.0.0.1:3979/api/messages` |
+
+### Pre / post hooks (grounding)
+
+```bash
+# Before a committing decision (architecture, ticket rewrite, big implement):
+LOCADEV_DECISION='…' LOCADEV_CITATIONS='url; PROJ-1; path' ./hooks/pre-decision.sh
+
+# Before claiming ready / done:
+LOCADEV_READY_CLAIM='…' LOCADEV_EVIDENCE='verify:ok; pytest:…; gh:PR #n; jira:…' ./hooks/post-ready.sh
+```
+
+Checklists: `hooks/pre-decision.checklist`, `hooks/post-ready.checklist`. Full protocol: **`hooks/README.md`**.
 
 ---
 
@@ -36,6 +129,10 @@ When an emulator only approximates the real service, that approximation is inten
 
 - **Docker Desktop** (macOS) or **Docker Engine** (Linux) with `docker compose` v2
 - **Python 3.12** for adapter images and host-side tests/demos
+- **AI coding agent** for the full workflow (human types / approves)
+- **`gh`** (GitHub CLI) installed and authenticated when using the PR/issue path
+- **Jira** and/or **Azure DevOps** board access when tickets are in scope (`boards/config.example.json` → `.grok/local/boards.json`; `JIRA_API_TOKEN` / `AZURE_DEVOPS_EXT_PAT`)
+- Channel access (**Slack / Discord / Teams**) — or locadev profiles `slack` / `discord` / `teams` for local practice
 - Optional: host **[Ollama](https://ollama.com)** or **Claude Code CLI** (`claude auth login`) for real LLM output through the bridge
 - Optional GPU: NVIDIA toolkit on Linux for the dockerized Ollama profile; on Mac prefer host Ollama
 
@@ -138,6 +235,8 @@ Ports are fixed to avoid common local clashes. Do not renumber without a documen
 | AI Search emulator | **8800** | `search` | |
 | Fake SendGrid | **8095** | `mail` | GET `/captured` to assert mail |
 | Fake Slack | **8096** | `slack` | UI `/ui` + GET `/messages` |
+| Fake Discord | **8097** | `discord` | UI `/ui` + GET `/messages` |
+| Azure Functions | **7071** | `functions` | Runtime + sample; storage → Azurite |
 | fake-teams | **3979** | `teams` | GET `/api/messages` |
 | echo-bot | **3978** | `teams` | |
 | sample_service | **18080** | `sample` | |
@@ -162,15 +261,37 @@ docker compose --profile aws --profile search up -d --build
 | `kv` | lowkey-vault on **8443** | Key Vault–aware apps (most can stay on `USE_KEY_VAULT=false`) |
 | `mail` | Fake SendGrid capture on **8095** | Outbound email without leaving the machine; **see** via `GET /captured` |
 | `slack` | Fake Slack Web API on **8096** | Post/history/inject; **see** via `http://127.0.0.1:8096/ui` and `GET /messages` |
+| `discord` | Fake Discord REST on **8097** | Create/list/inject; **see** via `http://127.0.0.1:8097/ui` and `GET /messages` |
+| `functions` | Functions-style host + sample on **7071** | HTTP + Azurite **queue** I/O (`AzureWebJobsStorage`); real `func start` on host also supported |
 | `ollama` | Dockerized Ollama for the bridge | Real local models from the compose network (Mac: often prefer host Ollama) |
 | `teams` | fake-teams + echo-bot (no M365 tenant, no tunnel) | Bot Framework / Teams; **see** via `GET /api/messages` |
 | `sample` | Minimal in-repo FastAPI consumer on **18080** | Prove end-to-end wiring without another repo |
+
+### Azure Functions + Azurite
+
+Azurite is **core** (always on). Azure Functions needs it for `AzureWebJobsStorage` (triggers/bindings on blob, queue, table).
+
+| How you run Functions | Storage endpoints |
+|----------------------|-------------------|
+| Profile `functions` (sample container) | Compose DNS: `azurite:10000` / `10001` / `10002` |
+| Host `func start` / your app | `127.0.0.1:10000` / **`10101`** (queue) / `10002` — see `sandbox.env.example` |
+
+```bash
+./scripts/start.sh functions
+curl -s http://127.0.0.1:7071/api/ping
+curl -s 'http://127.0.0.1:7071/api/httpHello?name=world'
+# queue worker logs:
+docker logs locadev-sample-azure-functions 2>&1 | tail -20
+```
+
+Details: `sample_azure_functions/README.md`.
 
 ### Seeing messages on fakes
 
 | Fake | How to inspect traffic in tests / browser |
 |------|-------------------------------------------|
 | **Slack** (`slack`) | http://127.0.0.1:8096/ui · `GET /messages` · history API |
+| **Discord** (`discord`) | http://127.0.0.1:8097/ui · `GET /messages` · channel history REST |
 | **Teams** (`teams`) | `GET http://127.0.0.1:3979/api/messages` · transcript endpoints |
 | **SendGrid** (`mail`) | `GET http://127.0.0.1:8095/captured` |
 

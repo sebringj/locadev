@@ -1,6 +1,16 @@
 # Project website (`docs/`)
 
-Static landing page for **locadev**. No build step — pure HTML/CSS + logo.
+Static landing page for **locadev**.
+
+**Positioning:** *You type. AI runs the rest.* — full AI workflow (gather via **browser skills** → clarify in Slack/Discord/Teams → **Jira + ADO boards** → `gh` PRs) + desk-hosted local cloud + **pre/post hooks**.
+
+| Doc | Topic |
+|-----|--------|
+| [browser-skills.md](./browser-skills.md) | web-requirements vs chrome-debug-profile vs playwright |
+| [../boards/README.md](../boards/README.md) | Jira + Azure DevOps |
+| [../hooks/README.md](../hooks/README.md) | Pre/post grounding |
+
+No build step — pure HTML/CSS + logo.
 
 ## Preview locally (this works even before GitHub Pages)
 

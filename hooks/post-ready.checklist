@@ -1,0 +1,17 @@
+# Post-ready evidence checklist
+# Fill before claiming done / ready for review / ship.
+# Agents: attach this (or equivalent) + run ./hooks/post-ready.sh
+
+## Ready claim (one sentence)
+-
+
+## Receipts
+- [ ] make verify (or N/A — reason):
+- [ ] tests (make test / scoped) (or N/A — reason):
+- [ ] Board updated (Jira and/or Azure DevOps / GitHub issue):
+- [ ] PR / branch via gh (if code shipped):
+- [ ] Channel notified or Qs closed (if clarification was open):
+- [ ] Citations still valid (list):
+
+## Gate
+- [ ] I will not say "ready" without the receipts above
