@@ -5,13 +5,20 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/sebringj/locadev"><img src="https://img.shields.io/badge/GitHub-sebringj%2Flocadev-181717?logo=github&logoColor=white" alt="GitHub sebringj/locadev" /></a>
+  <a href="https://github.com/gtfodevs/locadev"><img src="https://img.shields.io/badge/GitHub-gtfodevs%2Flocadev-181717?logo=github&logoColor=white" alt="GitHub gtfodevs/locadev" /></a>
 </p>
 
 <p align="center">
-  <strong>Repo:</strong> <a href="https://github.com/sebringj/locadev">github.com/sebringj/locadev</a>
+  <strong>Repo:</strong> <a href="https://github.com/gtfodevs/locadev">github.com/gtfodevs/locadev</a>
   · <strong>Site:</strong> <code>docs/index.html</code> (Pages or custom subdomain)
   · preview: <code>python3 -m http.server 8088 --directory docs</code>
+</p>
+
+<p align="center">
+  <sub>Sponsored by</sub><br />
+  <a href="https://github.com/gtfodevs" title="GTFO DEVS on GitHub">
+    <img src="gtfo-logo.png" alt="GTFO DEVS" height="40" />
+  </a>
 </p>
 
 **You type. AI runs the rest.** Full AI workflow + local cloud on your desk.

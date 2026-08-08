@@ -19,3 +19,7 @@ pglite-data/
 .grok/skills/**/config.local.json
 # Do not commit a root external-docker-drive.json — use .grok/local/ instead
 .grok/external-docker-drive.json
+
+# macOS AppleDouble / resource forks
+._*
+**/._*

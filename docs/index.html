@@ -4,12 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>locadev — you type, AI runs the rest</title>
-  <meta name="description" content="Full AI workflow: gather &amp; clarify (Slack/Discord/Teams), update Jira and Azure DevOps boards, ship with gh — local Azure/AWS-shaped cloud on your desk. Open source on GitHub: sebringj/locadev." />
+  <meta name="description" content="Full AI workflow: gather &amp; clarify (Slack/Discord/Teams), update Jira and Azure DevOps boards, ship with gh — local Azure/AWS-shaped cloud on your desk. Open source on GitHub: gtfodevs/locadev." />
   <meta property="og:title" content="locadev — full AI workflow, local cloud" />
-  <meta property="og:description" content="You type. AI gathers, clarifies in-channel, updates Jira/ADO boards, opens PRs with gh. Source &amp; docs: github.com/sebringj/locadev" />
+  <meta property="og:description" content="You type. AI gathers, clarifies in-channel, updates Jira/ADO boards, opens PRs with gh. Source &amp; docs: github.com/gtfodevs/locadev" />
   <meta property="og:image" content="./localdev-logo.jpg" />
   <meta property="og:type" content="website" />
-  <link rel="canonical" href="https://github.com/sebringj/locadev" />
+  <link rel="canonical" href="https://github.com/gtfodevs/locadev" />
   <link rel="icon" href="./localdev-logo.jpg" type="image/jpeg" />
   <!-- System fonts + inline SVG only (no CDN) so subdomain / Pages / offline still work -->
   <style>
@@ -32,7 +32,7 @@
       --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
       /* Absolute GitHub URLs — works on custom subdomain, *.github.io, and file:// */
-      --repo: https://github.com/sebringj/locadev;
+      --repo: https://github.com/gtfodevs/locadev;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -557,14 +557,73 @@
 
     footer a:hover { text-decoration: underline; }
 
+    /* Sponsored by GTFO DEVS — logo is the link */
+    .sponsor {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.45rem;
+      margin: 2rem auto 0;
+      padding: 1.15rem 1.25rem 1.25rem;
+      max-width: 22rem;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .sponsor-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .sponsor-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      border-radius: 10px;
+      padding: 0.35rem 0.5rem;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+      outline: none;
+    }
+
+    .sponsor-link:hover,
+    .sponsor-link:focus-visible {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .sponsor-link:focus-visible {
+      box-shadow: 0 0 0 2px var(--accent-cyan), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .sponsor-logo {
+      display: block;
+      height: 36px;
+      width: auto;
+      max-width: min(220px, 70vw);
+      object-fit: contain;
+    }
+
+    footer .sponsor {
+      margin-top: 1.75rem;
+      margin-bottom: 0.5rem;
+    }
+
     @media (max-width: 560px) {
       nav .links a:not(.btn) { display: none; }
+      .sponsor-logo { height: 30px; }
     }
   </style>
 </head>
 <body>
   <!--
-    Source of truth: https://github.com/sebringj/locadev
+    Source of truth: https://github.com/gtfodevs/locadev
     This page may be served from a custom subdomain or GitHub Pages —
     always link clone / issues / docs to that GitHub repo (absolute URLs).
   -->
@@ -581,11 +640,11 @@
         <a href="#hooks">Hooks</a>
         <a href="#profiles">Profiles</a>
         <a href="#start">Start</a>
-        <a class="nav-github" href="https://github.com/sebringj/locadev" target="_blank" rel="noopener noreferrer" title="Open source on GitHub">
+        <a class="nav-github" href="https://github.com/gtfodevs/locadev" target="_blank" rel="noopener noreferrer" title="Open source on GitHub">
           <svg class="gh-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </a>
-        <a class="btn btn-github" href="https://github.com/sebringj/locadev" target="_blank" rel="noopener noreferrer">
+        <a class="btn btn-github" href="https://github.com/gtfodevs/locadev" target="_blank" rel="noopener noreferrer">
           <svg class="gh-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           View repo
         </a>
@@ -613,22 +672,22 @@
         <div>
           <strong>Open source on GitHub</strong> — this site is the product page;
           code, issues, and full docs live in the repo
-          <a class="repo-path" href="https://github.com/sebringj/locadev" target="_blank" rel="noopener noreferrer">sebringj/locadev</a>.
+          <a class="repo-path" href="https://github.com/gtfodevs/locadev" target="_blank" rel="noopener noreferrer">gtfodevs/locadev</a>.
           Clone there; don’t look for a separate “download” portal.
         </div>
       </div>
 
       <div class="hero-actions">
-        <a class="btn btn-github" href="https://github.com/sebringj/locadev" target="_blank" rel="noopener noreferrer">
+        <a class="btn btn-github" href="https://github.com/gtfodevs/locadev" target="_blank" rel="noopener noreferrer">
           <svg class="gh-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           View on GitHub
         </a>
         <a class="btn btn-primary" href="#start">Get started</a>
-        <a class="btn btn-ghost" href="https://github.com/sebringj/locadev/blob/main/README.md" target="_blank" rel="noopener noreferrer">Full README</a>
+        <a class="btn btn-ghost" href="https://github.com/gtfodevs/locadev/blob/main/README.md" target="_blank" rel="noopener noreferrer">Full README</a>
       </div>
       <div class="code-block">
         <span class="cm"># clone the GitHub repo (source of truth)</span><br />
-        git clone https://github.com/sebringj/locadev.git<br />
+        git clone https://github.com/gtfodevs/locadev.git<br />
         cd locadev<br />
         <span class="cm"># ground → decide → build → prove ready</span><br />
         <span class="cmd">./hooks/pre-decision.sh</span><br />
@@ -676,7 +735,7 @@
       <h2>Jira + Azure DevOps</h2>
       <p class="section-lead">
         First-class work boards. Config in <code>.grok/local/boards.json</code>; tokens in env only.
-        Details: <a href="https://github.com/sebringj/locadev/blob/main/boards/README.md" target="_blank" rel="noopener noreferrer">boards/README.md on GitHub</a>.
+        Details: <a href="https://github.com/gtfodevs/locadev/blob/main/boards/README.md" target="_blank" rel="noopener noreferrer">boards/README.md on GitHub</a>.
       </p>
       <div class="grid">
         <article class="card">
@@ -698,7 +757,7 @@
       <h2>Pre / post hooks (no hopium)</h2>
       <p class="section-lead">
         Big choices and “we’re done” both fail closed without grounding. Protocol lives in
-        <a href="https://github.com/sebringj/locadev/tree/main/hooks" target="_blank" rel="noopener noreferrer">hooks/ on GitHub</a>.
+        <a href="https://github.com/gtfodevs/locadev/tree/main/hooks" target="_blank" rel="noopener noreferrer">hooks/ on GitHub</a>.
       </p>
       <div class="grid">
         <article class="card">
@@ -745,7 +804,7 @@
       <h2>Browser skills (what they mean)</h2>
       <p class="section-lead">
         Three different jobs — don’t mix them up.
-        Full map: <a href="https://github.com/sebringj/locadev/blob/main/docs/browser-skills.md" target="_blank" rel="noopener noreferrer">docs/browser-skills.md</a>
+        Full map: <a href="https://github.com/gtfodevs/locadev/blob/main/docs/browser-skills.md" target="_blank" rel="noopener noreferrer">docs/browser-skills.md</a>
         (or <a href="./browser-skills.md">local copy</a> when browsing this site).
       </p>
       <div class="grid">
@@ -796,13 +855,13 @@
       <h2>Start the machine</h2>
       <p class="section-lead">
         Everything ships from
-        <a href="https://github.com/sebringj/locadev" target="_blank" rel="noopener noreferrer">github.com/sebringj/locadev</a>
+        <a href="https://github.com/gtfodevs/locadev" target="_blank" rel="noopener noreferrer">github.com/gtfodevs/locadev</a>
         — clone first, then summon the stack. macOS / Linux + Docker Compose v2.
       </p>
       <div class="steps">
         <div class="step">
           <h3>1 · Clone from GitHub</h3>
-          <p><code>git clone https://github.com/sebringj/locadev.git</code> · star/watch the repo for updates · open issues there.</p>
+          <p><code>git clone https://github.com/gtfodevs/locadev.git</code> · star/watch the repo for updates · open issues there.</p>
         </div>
         <div class="step">
           <h3>2 · Tool up + summon</h3>
@@ -814,12 +873,12 @@
         </div>
       </div>
       <div class="hero-actions" style="margin-top: 1.5rem;">
-        <a class="btn btn-github" href="https://github.com/sebringj/locadev" target="_blank" rel="noopener noreferrer">
+        <a class="btn btn-github" href="https://github.com/gtfodevs/locadev" target="_blank" rel="noopener noreferrer">
           <svg class="gh-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          Open sebringj/locadev
+          Open gtfodevs/locadev
         </a>
-        <a class="btn btn-ghost" href="https://github.com/sebringj/locadev/issues" target="_blank" rel="noopener noreferrer">Issues</a>
-        <a class="btn btn-ghost" href="https://github.com/sebringj/locadev/blob/main/README.md" target="_blank" rel="noopener noreferrer">README</a>
+        <a class="btn btn-ghost" href="https://github.com/gtfodevs/locadev/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+        <a class="btn btn-ghost" href="https://github.com/gtfodevs/locadev/blob/main/README.md" target="_blank" rel="noopener noreferrer">README</a>
       </div>
     </section>
 
@@ -831,24 +890,41 @@
           Topaz ≠ Entra. PGlite ≠ multi-writer Postgres. AI Search is partial.
           Hooks force citations so the AI doesn’t paper over those gaps — or invent requirements.
           Source of truth:
-          <a href="https://github.com/sebringj/locadev" style="color: var(--accent);" target="_blank" rel="noopener noreferrer">github.com/sebringj/locadev</a>.
+          <a href="https://github.com/gtfodevs/locadev" style="color: var(--accent);" target="_blank" rel="noopener noreferrer">github.com/gtfodevs/locadev</a>.
         </p>
       </div>
     </section>
 
     <footer>
-      <p style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0.5rem 0.85rem;">
+      <div class="sponsor">
+        <p class="sponsor-label">Sponsored by</p>
+        <a class="sponsor-link"
+           href="https://github.com/gtfodevs"
+           target="_blank"
+           rel="noopener noreferrer"
+           title="Sponsored by GTFO DEVS — open the GitHub org"
+           aria-label="Sponsored by GTFO DEVS — visit github.com/gtfodevs">
+          <img class="sponsor-logo"
+               src="./gtfo-logo.png"
+               alt="GTFO DEVS"
+               width="220"
+               height="70"
+               loading="lazy"
+               decoding="async" />
+        </a>
+      </div>
+      <p style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:0.5rem 0.85rem; margin-top: 1.25rem;">
         <strong class="wordmark"><span class="loca">Loca</span><span class="dev">Dev</span></strong>
         <span style="opacity:0.5;">·</span>
-        <a class="nav-github" href="https://github.com/sebringj/locadev" target="_blank" rel="noopener noreferrer" style="color:var(--github);">
+        <a class="nav-github" href="https://github.com/gtfodevs/locadev" target="_blank" rel="noopener noreferrer" style="color:var(--github);">
           <svg class="gh-icon" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          sebringj/locadev
+          gtfodevs/locadev
         </a>
         <span style="opacity:0.5;">·</span>
-        <a href="https://github.com/sebringj/locadev/blob/main/README.md" target="_blank" rel="noopener noreferrer">README</a>
-        <a href="https://github.com/sebringj/locadev/blob/main/boards/README.md" target="_blank" rel="noopener noreferrer">boards</a>
-        <a href="https://github.com/sebringj/locadev/tree/main/hooks" target="_blank" rel="noopener noreferrer">hooks</a>
-        <a href="https://github.com/sebringj/locadev/issues" target="_blank" rel="noopener noreferrer">issues</a>
+        <a href="https://github.com/gtfodevs/locadev/blob/main/README.md" target="_blank" rel="noopener noreferrer">README</a>
+        <a href="https://github.com/gtfodevs/locadev/blob/main/boards/README.md" target="_blank" rel="noopener noreferrer">boards</a>
+        <a href="https://github.com/gtfodevs/locadev/tree/main/hooks" target="_blank" rel="noopener noreferrer">hooks</a>
+        <a href="https://github.com/gtfodevs/locadev/issues" target="_blank" rel="noopener noreferrer">issues</a>
       </p>
       <p style="margin-top: 0.75rem; opacity: 0.7;">
         Site may use a custom subdomain · source always on GitHub · gather · clarify · Jira/ADO · code · ground · ready

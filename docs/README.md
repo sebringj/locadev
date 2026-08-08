@@ -2,7 +2,7 @@
 
 Static landing page for **locadev**.
 
-**Source of truth (always link here):** [github.com/sebringj/locadev](https://github.com/sebringj/locadev)
+**Source of truth (always link here):** [github.com/gtfodevs/locadev](https://github.com/gtfodevs/locadev)
 
 The site may be served from **GitHub Pages** or a **custom subdomain**. The page uses **absolute GitHub URLs** (clone, README, issues, boards/hooks docs) so a pretty domain never looks like a disconnected product without a repo.
 
@@ -14,7 +14,12 @@ The site may be served from **GitHub Pages** or a **custom subdomain**. The page
 | [../boards/README.md](../boards/README.md) | Jira + Azure DevOps |
 | [../hooks/README.md](../hooks/README.md) | Pre/post grounding |
 
-No build step — pure HTML/CSS + logo + **inline GitHub mark SVG** (no CDN).
+No build step — pure HTML/CSS + logos + **inline GitHub mark SVG** (no CDN).
+
+| Asset | Role |
+|-------|------|
+| `localdev-logo.jpg` | LocaDev wordmark / favicon |
+| `gtfo-logo.png` | **Sponsored by** mark → links to [github.com/gtfodevs](https://github.com/gtfodevs) (org home, not the locadev repo) |
 
 ## Preview locally (this works even before GitHub Pages)
 
@@ -53,16 +58,16 @@ If the browser says **failed to load page**:
 Default Pages URL:
 
 ```text
-https://sebringj.github.io/locadev/
+https://gtfodevs.github.io/locadev/
 ```
 
 ### Custom subdomain
 
 In the repo **Settings → Pages → Custom domain**, set your subdomain (e.g. `locadev.example.com`) and add the DNS CNAME GitHub shows. Optional: `docs/CNAME` file with that host.
 
-The landing page already labels itself as the **product page** and points clone/issues/docs at **github.com/sebringj/locadev** so visitors aren’t stranded on a logo-only domain.
+The landing page already labels itself as the **product page** and points clone/issues/docs at **github.com/gtfodevs/locadev** so visitors aren’t stranded on a logo-only domain.
 
-If the GitHub org/user ever renames, update absolute links in `docs/index.html` (search `sebringj/locadev`).
+If the GitHub org/user ever renames, update absolute links in `docs/index.html` (search `gtfodevs/locadev`).
 
 ## Files
 
