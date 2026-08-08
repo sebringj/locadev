@@ -1,0 +1,27 @@
+version: 2
+
+logging:
+  prod: false
+  log_level: info
+
+directory:
+  db_path: /tmp/directory.db
+
+api:
+  services:
+    authorizer:
+      grpc:
+        listen_address: "0.0.0.0:8282"
+      gateway:
+        listen_address: "0.0.0.0:8383"
+        http: true
+
+opa:
+  instance_id: "-"
+  graceful_shutdown_period_seconds: 2
+  local_bundles:
+    paths:
+      - /policy
+    skip_verification: true
+  config:
+    bundles: {}

@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="card bg-base-100 shadow-xl">
+  <div class="card-body">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <h2 class="card-title">Service board</h2>
+      <a href="/" class="btn btn-sm btn-outline">Refresh</a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
+      {% for s in services %}
+      <div class="rounded-box border border-base-content/10 p-3 flex items-start gap-3
+                  {% if s.ok %}bg-success/10{% else %}bg-error/10{% endif %}">
+        <div class="mt-1">
+          {% if s.ok %}
+          <span class="badge badge-success badge-sm">up</span>
+          {% else %}
+          <span class="badge badge-error badge-sm">down</span>
+          {% endif %}
+        </div>
+        <div class="min-w-0">
+          <div class="font-semibold">{{ s.name }}</div>
+          <div class="mono opacity-70">:{{ s.port }}</div>
+          {% if s.detail %}
+          <pre class="mono panel-scroll mt-1 opacity-80 whitespace-pre-wrap">{{ s.detail }}</pre>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+  <!-- Topaz -->
+  <section class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Topaz RBAC</h2>
+      <p class="text-sm opacity-70">alice@example.com = editor · bob@example.com = viewer</p>
+      <form method="post" action="/topaz" class="space-y-3">
+        <label class="form-control">
+          <span class="label-text">User</span>
+          <select name="user" class="select select-bordered">
+            <option value="alice@example.com">alice@example.com</option>
+            <option value="bob@example.com">bob@example.com</option>
+          </select>
+        </label>
+        <label class="form-control">
+          <span class="label-text">Action</span>
+          <select name="action" class="select select-bordered">
+            <option value="read">read</option>
+            <option value="write">write</option>
+            <option value="infer">infer</option>
+            <option value="publish">publish</option>
+          </select>
+        </label>
+        <button class="btn btn-primary btn-block">Check allow</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Redis -->
+  <section class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Redis</h2>
+      <p class="text-sm opacity-70">host :6380</p>
+      <form method="post" action="/redis" class="space-y-3">
+        <input name="key" class="input input-bordered w-full" value="locadev:playground" />
+        <input name="value" class="input input-bordered w-full" placeholder="value to set" value="hello" />
+        <button class="btn btn-secondary btn-block">SET + GET</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Blob -->
+  <section class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Azurite blob</h2>
+      <p class="text-sm opacity-70">container <code class="mono">locadev-playground</code></p>
+      <form method="post" action="/blob" enctype="multipart/form-data" class="space-y-3">
+        <input name="name" class="input input-bordered w-full" placeholder="blob name" value="demo.txt" />
+        <textarea name="text" class="textarea textarea-bordered w-full" rows="3" placeholder="or type text content">playground blob body</textarea>
+        <input type="file" name="file" class="file-input file-input-bordered w-full" />
+        <button class="btn btn-accent btn-block">Upload</button>
+      </form>
+      {% if blobs %}
+      <div class="divider text-xs">blobs</div>
+      <ul class="menu bg-base-200 rounded-box panel-scroll">
+        {% for b in blobs %}
+        <li><span class="mono">{{ b }}</span></li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Service Bus -->
+  <section class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Service Bus</h2>
+      <p class="text-sm opacity-70">queue <code class="mono">app-work-queue</code></p>
+      <form method="post" action="/bus/send" class="space-y-3">
+        <input name="body" class="input input-bordered w-full" value="hello-from-playground" />
+        <button class="btn btn-primary btn-block">Send</button>
+      </form>
+      <form method="post" action="/bus/receive" class="mt-2">
+        <button class="btn btn-outline btn-block">Receive one</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Bridge chat -->
+  <section class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Foundry bridge · chat</h2>
+      <p class="text-sm opacity-70">AzureOpenAI client → :8090 (CHAT_BACKEND=fake by default)</p>
+      <form method="post" action="/chat" class="space-y-3">
+        <textarea name="prompt" class="textarea textarea-bordered w-full" rows="3">ping from playground</textarea>
+        <button class="btn btn-primary btn-block">Chat</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Bridge embed -->
+  <section class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Foundry bridge · embeddings</h2>
+      <form method="post" action="/embed" class="space-y-3">
+        <input name="text" class="input input-bordered w-full" value="locadev embedding demo" />
+        <button class="btn btn-secondary btn-block">Embed</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- PGlite -->
+  <section class="card bg-base-100 shadow-xl lg:col-span-2">
+    <div class="card-body">
+      <h2 class="card-title">PGlite app SQL</h2>
+      <p class="text-sm opacity-70">HTTP :5433 · notes table (+ vector extension)</p>
+      <form method="post" action="/notes" class="flex flex-col sm:flex-row gap-2">
+        <input name="body" class="input input-bordered flex-1" placeholder="note body" />
+        <button class="btn btn-accent">Insert note</button>
+      </form>
+      {% if notes %}
+      <div class="overflow-x-auto mt-3">
+        <table class="table table-sm">
+          <thead><tr><th>id</th><th>body</th></tr></thead>
+          <tbody>
+            {% for n in notes %}
+            <tr>
+              <td class="mono">{{ n.id or n.get('id') }}</td>
+              <td>{{ n.body or n.get('body') }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+</div>
+
+<section class="card bg-base-100 shadow">
+  <div class="card-body text-sm opacity-80">
+    <h3 class="font-semibold">CLI demos (same stack)</h3>
+    <p class="mono">cd demos && python blob_artifacts.py · servicebus_events.py · pglite_notes.py · foundry_chat_embed.py</p>
+  </div>
+</section>
+
+{% endblock %}

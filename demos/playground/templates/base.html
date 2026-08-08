@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}locadev playground{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; }
+    .panel-scroll { max-height: 14rem; overflow: auto; }
+  </style>
+</head>
+<body class="min-h-screen bg-base-300">
+  <div class="navbar bg-base-100 shadow-lg px-4">
+    <div class="flex-1">
+      <a href="/" class="btn btn-ghost text-xl font-bold tracking-tight">
+        <span class="text-primary">loca</span>dev
+        <span class="badge badge-secondary badge-sm ml-2">playground</span>
+      </a>
+    </div>
+    <div class="flex-none gap-2">
+      <span class="badge badge-outline badge-sm hidden sm:inline-flex">core stack demos</span>
+      <a class="btn btn-sm btn-ghost" href="/api/health" target="_blank">API health</a>
+    </div>
+  </div>
+
+  <main class="container mx-auto max-w-6xl p-4 md:p-6 space-y-6">
+    {% if flash %}
+    <div class="alert {% if flash.ok %}alert-success{% else %}alert-error{% endif %} shadow-lg">
+      <span class="mono">{{ flash.msg }}</span>
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer footer-center p-6 text-base-content/60 text-sm">
+    <aside>
+      <p>DaisyUI + Tailwind CDN · talks to locadev on localhost · env-only contracts</p>
+    </aside>
+  </footer>
+</body>
+</html>

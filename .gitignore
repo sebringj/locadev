@@ -1,0 +1,21 @@
+# never commit real env files; *.example files are the only tracked env files
+.env
+.env.*
+!.env.example
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.log
+pglite-data/
+
+# Skill local-config (machine-specific; keep examples tracked)
+# Preferred: .grok/local/<skill-name>.json
+.grok/local/**
+!.grok/local/README.md
+# Alternate: .grok/<skill>.local.json or skills/<skill>/config.local.json
+.grok/**/*.local.json
+.grok/skills/**/config.local.json
+# Do not commit a root external-docker-drive.json — use .grok/local/ instead
+.grok/external-docker-drive.json

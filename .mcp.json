@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "locadev-fake-teams": {
+      "command": "python3",
+      "args": ["mcp_server/server.py"],
+      "env": {
+        "FAKE_TEAMS_BASE": "http://localhost:3979"
+      },
+      "_comment": "Repo-local only for locadev. Do not copy into a wider workspace MCP config."
+    }
+  }
+}

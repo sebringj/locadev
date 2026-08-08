@@ -1,0 +1,277 @@
+# Project name: use `docker compose -p locadev` (Makefile / scripts do this).
+# Top-level `name:` requires Compose v2.20+; keep compatible with older Docker Desktop.
+
+networks:
+  locadev:
+    name: locadev
+
+volumes:
+  azurite-data:
+  mssql-data:
+  pglite-data:
+  ministack-data:
+  ollama-data:
+  qdrant-data:
+
+services:
+  # --- core ---
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: locadev-azurite
+    command: >
+      azurite --blobHost 0.0.0.0 --queueHost 0.0.0.0 --tableHost 0.0.0.0
+      --location /data --skipApiVersionCheck
+    ports:
+      - "10000:10000"
+      - "10101:10001"
+      - "10002:10002"
+    volumes:
+      - azurite-data:/data
+    networks:
+      - locadev
+
+  mssql:
+    # azure-sql-edge: ARM-native on Apple Silicon. Full SQL Server 2022 often
+    # crashes under QEMU ("Invalid mapping of address" / jemalloc). SB backend only.
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: locadev-mssql
+    environment:
+      ACCEPT_EULA: ${ACCEPT_EULA:-Y}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Sandbox!Dev2026}
+      MSSQL_PID: Developer
+    volumes:
+      - mssql-data:/var/opt/mssql
+    networks:
+      locadev:
+        aliases:
+          - mssql
+    # 1433 intentionally not published — SB backend only, not app DB
+
+  servicebus:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    container_name: locadev-servicebus
+    ports:
+      - "5672:5672"
+      - "5300:${EMULATOR_HTTP_PORT:-5300}"
+    environment:
+      SQL_SERVER: mssql
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Sandbox!Dev2026}
+      ACCEPT_EULA: ${ACCEPT_EULA:-Y}
+      EMULATOR_HTTP_PORT: ${EMULATOR_HTTP_PORT:-5300}
+      SQL_WAIT_INTERVAL: ${SQL_WAIT_INTERVAL:-20}
+    volumes:
+      - ./infra/Config.json:/ServiceBus_Emulator/ConfigFiles/Config.json:ro
+    depends_on:
+      - mssql
+    networks:
+      locadev:
+        aliases:
+          - servicebus-emulator
+
+  bridge:
+    build: ./bridge
+    container_name: locadev-bridge
+    ports:
+      - "8090:8090"
+    environment:
+      CHAT_BACKEND: ${CHAT_BACKEND:-fake}
+      EMB_BACKEND: ${EMB_BACKEND:-fake}
+      OLLAMA_BASE: ${OLLAMA_BASE:-http://host.docker.internal:11434}
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-qwen2.5:7b-instruct}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      EMBED_DIM: ${EMBED_DIM:-1536}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - locadev
+
+  pglite:
+    build: ./pglite
+    container_name: locadev-pglite
+    ports:
+      - "5433:5433"
+    environment:
+      PGLITE_DATA_DIR: ${PGLITE_DATA_DIR:-/data}
+    volumes:
+      - pglite-data:/data
+    networks:
+      locadev:
+        aliases:
+          - pglite
+
+  redis:
+    image: redis:7
+    container_name: locadev-redis
+    ports:
+      - "6380:6379"
+    networks:
+      locadev:
+        aliases:
+          - redis
+
+  topaz:
+    image: ghcr.io/aserto-dev/topaz:latest
+    container_name: locadev-topaz
+    command: ["run", "--config-file", "/config/config.yaml"]
+    ports:
+      - "8484:8383"
+      - "8485:8282"
+    volumes:
+      - ./topaz/config.yaml:/config/config.yaml:ro
+      - ./topaz/policy:/policy:ro
+    networks:
+      - locadev
+
+  # --- profile: cosmos ---
+  cosmos:
+    profiles: ["cosmos"]
+    image: mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest
+    container_name: locadev-cosmos
+    ports:
+      - "8081:8081"
+      - "1234:1234"
+    networks:
+      - locadev
+
+  # --- profile: aws ---
+  ministack:
+    profiles: ["aws"]
+    image: ministackorg/ministack:latest
+    container_name: locadev-ministack
+    ports:
+      - "4566:4566"
+    environment:
+      GATEWAY_PORT: "4566"
+      S3_PERSIST: "1"
+      SEED_BUCKET: ${SEED_BUCKET:-locadev-demo}
+    volumes:
+      - ministack-data:/var/lib/ministack
+      - ./infra/aws-init:/etc/localstack/init/ready.d:ro
+    networks:
+      - locadev
+
+  # --- profile: kv ---
+  keyvault:
+    profiles: ["kv"]
+    image: nagyesta/lowkey-vault:latest
+    container_name: locadev-keyvault
+    ports:
+      - "8443:8443"
+    networks:
+      - locadev
+
+  # --- profile: search ---
+  qdrant:
+    profiles: ["search"]
+    image: qdrant/qdrant:latest
+    container_name: locadev-qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    networks:
+      locadev:
+        aliases:
+          - qdrant
+
+  aisearch:
+    profiles: ["search"]
+    build: ./aisearch
+    container_name: locadev-aisearch
+    ports:
+      - "8800:8800"
+    environment:
+      QDRANT_URL: http://qdrant:6333
+    depends_on:
+      - qdrant
+    networks:
+      - locadev
+
+  # --- profile: mail ---
+  mail:
+    profiles: ["mail"]
+    build: ./mail
+    container_name: locadev-mail
+    ports:
+      - "8095:8095"
+    networks:
+      locadev:
+        aliases:
+          - sendgrid
+
+  # --- profile: ollama ---
+  ollama:
+    profiles: ["ollama"]
+    image: ollama/ollama:latest
+    container_name: locadev-ollama
+    volumes:
+      - ollama-data:/root/.ollama
+    # No published port — bridge reaches http://ollama:11434
+    # On Linux+NVIDIA, uncomment deploy.resources below.
+    # On macOS prefer host Ollama via OLLAMA_BASE=http://host.docker.internal:11434
+    networks:
+      locadev:
+        aliases:
+          - ollama
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  # --- profile: teams ---
+  fake-teams:
+    profiles: ["teams"]
+    build: ./fake_teams
+    container_name: locadev-fake-teams
+    ports:
+      - "3979:3979"
+    environment:
+      BOT_ENDPOINT: http://echo-bot:3978/api/messages
+      SERVICE_URL: http://fake-teams:3979
+    depends_on:
+      - echo-bot
+    networks:
+      locadev:
+        aliases:
+          - fake-teams
+
+  echo-bot:
+    profiles: ["teams"]
+    build: ./echo_bot
+    container_name: locadev-echo-bot
+    ports:
+      - "3978:3978"
+    environment:
+      ECHO_BOT_BRAIN: ${ECHO_BOT_BRAIN-http://bridge:8090}
+      TOPAZ_ENDPOINT: http://topaz:8383
+    depends_on:
+      - bridge
+      - topaz
+    networks:
+      locadev:
+        aliases:
+          - echo-bot
+
+  # --- profile: sample ---
+  sample:
+    profiles: ["sample"]
+    build: ./sample_service
+    container_name: locadev-sample
+    ports:
+      - "18080:8080"
+    environment:
+      PGLITE_URL: http://pglite:5433
+      REDIS_URL: redis://redis:6379
+      AZURE_OPENAI_ENDPOINT: http://bridge:8090/
+      AZURE_OPENAI_API_KEY: not-used
+      AZURE_OPENAI_CHAT_DEPLOYMENT: gpt-4.1
+      AZURE_OPENAI_API_VERSION: 2025-01-01-preview
+    depends_on:
+      - pglite
+      - redis
+      - bridge
+    networks:
+      - locadev

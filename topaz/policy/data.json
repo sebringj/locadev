@@ -1,0 +1,27 @@
+{
+  "access": {
+    "roles": {
+      "alice@example.com": ["editor"],
+      "bob@example.com": ["viewer"]
+    },
+    "permissions": {
+      "write": ["editor"],
+      "read": ["editor", "viewer"],
+      "infer": ["editor", "viewer"],
+      "publish": ["editor"],
+      "consume": ["editor", "viewer"],
+      "crawl": ["editor", "viewer"]
+    }
+  },
+  "approval": {
+    "roles": {
+      "alice@example.com": ["approver"],
+      "bob@example.com": ["viewer"]
+    },
+    "permissions": {
+      "approve": ["approver"],
+      "reject": ["approver"],
+      "view": ["approver", "viewer"]
+    }
+  }
+}

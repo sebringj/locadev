@@ -1,0 +1,22 @@
+{
+  "name": "my-external-docker",
+  "description": "Example: Docker Desktop data on an external drive via APFS sparsebundle.",
+  "requireExternalVolume": true,
+  "externalVolumePath": "/Volumes/MyDrive",
+  "sparsebundlePath": "/Volumes/MyDrive/DockerData.sparsebundle",
+  "mountPoint": "/Volumes/DockerData",
+  "dataFolder": "/Volumes/DockerData/docker-desktop-data",
+  "diskSizeMiB": 131072,
+  "filesharingDirectories": [
+    "/Volumes",
+    "/Volumes/DockerData"
+  ],
+  "cliCommand": "start-docker",
+  "dockerSettingsPath": "~/Library/Group Containers/group.com.docker/settings.json",
+  "waitTimeoutSeconds": 180,
+  "notes": [
+    "Copy this file to .grok/external-docker-drive.json (project) or ~/.grok/external-docker-drive.json (user).",
+    "Create the sparsebundle once: hdiutil create -size 200g -type SPARSEBUNDLE -fs APFS -volname DockerData /Volumes/MyDrive/DockerData.sparsebundle",
+    "ExFAT/NTFS alone cannot host Docker.raw reliably; use APFS image or an APFS partition."
+  ]
+}

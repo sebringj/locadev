@@ -1,0 +1,290 @@
+# locadev
+
+**locadev** is a drop-in local replacement for cloud infrastructure. Point any app that talks to Azure, AWS, or (later) other clouds at this stack by **changing env values only** — no code changes, no cloud subscription, no tunnel. Run `docker compose up`, pick the services you need, and develop offline against the same SDK contracts your production clients already use.
+
+Today the surface covers **Azure** and **AWS**. More platforms and services will land as profiles when there is demand. This is an **interim** local stand-in, not a full isolated subscription: you trade some cloud fidelity for free, offline, instant iteration.
+
+---
+
+## Honest limitations
+
+Say these out loud before you lean on the stack for “production-like” confidence:
+
+| What you might expect | What you actually get |
+|---|---|
+| Azure Entra / control-plane RBAC | **Topaz** for app-level fine-grained RBAC only — not Entra role assignments or managed identity |
+| Full Azure AI Search (semantic rerank, rich OData) | Qdrant-backed emulator: partial `$filter`, approximate hybrid/semantic scores |
+| Multi-tenant / multi-connection Postgres | **PGlite** (WASM Postgres + pgvector) for app data — single-connection spirit, not a full server |
+| A published SQL Server for apps | The only MSSQL in the stack is **internal to the Service Bus emulator** and is **not** an app DB |
+| Real cloud fidelity | Same API shapes and SDK contracts where it matters for local dev; approximations are documented next to the code |
+
+When an emulator only approximates the real service, that approximation is intentional and documented. Prefer finding limits in this README (or service READMEs) over discovering them at runtime.
+
+---
+
+## Prerequisites
+
+- **Docker Desktop** (macOS) or **Docker Engine** (Linux) with `docker compose` v2
+- **Python 3.12** for adapter images and host-side tests/demos
+- Optional: host **[Ollama](https://ollama.com)** or **Claude Code CLI** (`claude auth login`) for real LLM output through the bridge
+- Optional GPU: NVIDIA toolkit on Linux for the dockerized Ollama profile; on Mac prefer host Ollama
+
+Primary host path is **macOS / Linux**. Windows/WSL is optional; the supported scripts are bash.
+
+### Docker disk on external drive (local-config + skill)
+
+Images live on an **APFS sparsebundle** on the external drive (not raw ExFAT). Machine paths live in **gitignored local-config** so the skill stays reusable.
+
+```bash
+# first time / new machine (local file is gitignored):
+mkdir -p .grok/local
+cp .grok/skills/external-docker-drive/config.example.json \
+   .grok/local/external-docker-drive.json
+# edit paths, then after reboot / re-plug:
+start-docker
+# or: ./scripts/start-docker.sh
+```
+
+That script reads local JSON, mounts the sparsebundle → `mountPoint`, sets Docker `dataFolder`, starts Docker Desktop, and waits until the daemon is ready. **Do not open Docker from the menu first** without that volume mounted. If config is missing, `start-docker` **warns** and prints setup steps.
+
+| Piece | Path | Git |
+|-------|------|-----|
+| Active local config | `.grok/local/external-docker-drive.json` | ignored |
+| Local-config docs | `.grok/local/README.md` | tracked |
+| Example template | `.grok/skills/external-docker-drive/config.example.json` | tracked |
+| Agent skill | `/external-docker-drive` | tracked |
+| Project rules | `AGENTS.md` | tracked |
+
+### Agent skills format
+
+Skills under `.grok/skills/` (and user `~/.grok/skills/`) use **Grok’s skill layout**: a directory with `SKILL.md` (YAML frontmatter `name` + `description`, then markdown instructions), optional `scripts/`, `references/`, and `config.example.json`, plus **gitignored** machine config under `.grok/local/`.
+
+That packaging is easy to reuse with other major coding agents that support skills or project instructions—for example:
+
+| Ecosystem | Typical adaptation |
+|-----------|-------------------|
+| **Claude Code** | Copy into `.claude/skills/` or fold the body into `CLAUDE.md` / project rules |
+| **Cursor** | Map to `.cursor/rules` or a Cursor skill package |
+| **Codex / other skill hosts** | Same idea: frontmatter description for discovery + markdown steps as the prompt |
+
+The important parts travel unchanged: **when to invoke**, **step-by-step agent behavior**, **local-config paths**, and **scripts**. Only the folder name and discovery config usually need a thin rename for another host.
+
+---
+
+## Quick start
+
+```bash
+# 0. Docker on Toshiba (after reboot / re-plug)
+start-docker
+
+# 1. Env for compose substitution
+cp .env.example .env
+
+# 2. Start core stack (or pick profiles interactively)
+make up
+# or: ./scripts/start.sh              # interactive checkboxes
+# or: ./scripts/start.sh teams aws    # non-interactive profiles
+
+# 3. Health gate (host-only probes on 127.0.0.1)
+make verify
+# or: bash scripts/verify.sh
+
+# 4. DaisyUI playground (exercises core services in the browser)
+make playground
+# → http://127.0.0.1:19191   (see demos/README.md)
+
+# 5. Point a client app at local endpoints
+#    Copy only the vars your repo uses from sandbox.env.example
+```
+
+Compose project name is **`locadev`**, network **`locadev`**, containers **`locadev-<service>`**.
+
+**Done when:** core health endpoints answer, and a client repo can exercise blob / Service Bus / OpenAI-shaped APIs / app SQL without a cloud subscription and without editing application code.
+
+---
+
+## Port map
+
+Ports are fixed to avoid common local clashes. Do not renumber without a documented reason.
+
+| Service | Host port | Profile | Notes |
+|---|---|---|---|
+| Azurite blob | **10000** | core | |
+| Azurite queue | **10101** | core | host 10001 is often taken |
+| Azurite table | **10002** | core | |
+| Service Bus AMQP | **5672** | core | real AMQP |
+| Service Bus mgmt/health | **5300** | core | |
+| mssql (SB backend) | — | core | **not published**; internal only |
+| Foundry bridge (Azure OpenAI shape) | **8090** | core | |
+| PGlite HTTP (app SQL) | **5433** | core | |
+| PGlite PG-wire (optional) | **5432** | core | only if gateway is enabled |
+| Redis | **6380** | core | containers use `redis:6379` |
+| Topaz REST | **8484** | core | leaves 8383 free for a second Topaz |
+| Topaz gRPC | **8485** | core | |
+| Cosmos DB vNext | **8081**, **1234** | `cosmos` | HTTP gateway on 8081 |
+| MiniStack (AWS gateway) | **4566** | `aws` | S3-focused by default |
+| Key Vault (lowkey-vault) | **8443** | `kv` | |
+| Qdrant | **6333** | `search` | |
+| AI Search emulator | **8800** | `search` | |
+| Fake SendGrid | **8095** | `mail` | |
+| fake-teams | **3979** | `teams` | |
+| echo-bot | **3978** | `teams` | |
+| sample_service | **18080** | `sample` | |
+
+**Core (always on):** azurite, mssql, servicebus, bridge, topaz, pglite, redis.
+
+---
+
+## Profiles — pick what to spin up
+
+Optional services are Docker Compose **profiles**. Use the interactive launcher, pass names to `scripts/start.sh`, or:
+
+```bash
+docker compose --profile aws --profile search up -d --build
+```
+
+| Profile | What it adds | When to enable |
+|---|---|---|
+| `aws` | MiniStack on **4566** (LocalStack-shaped; S3 by default, `test`/`test`, `us-east-1`) | Any app using `boto3` + `endpoint_url` for S3 (or more AWS APIs as you enable them) |
+| `cosmos` | Cosmos DB vNext emulator (**8081**, **1234**) | Document DB / chat-history style clients |
+| `search` | Qdrant + Azure AI Search–shaped emulator (**6333**, **8800**) | `azure-search-documents` without a real AI Search resource |
+| `kv` | lowkey-vault on **8443** | Key Vault–aware apps (most can stay on `USE_KEY_VAULT=false`) |
+| `mail` | Fake SendGrid capture on **8095** | Outbound email without leaving the machine |
+| `ollama` | Dockerized Ollama for the bridge | Real local models from the compose network (Mac: often prefer host Ollama) |
+| `teams` | fake-teams + echo-bot (no M365 tenant, no tunnel) | Bot Framework / Teams activity development |
+| `sample` | Minimal in-repo FastAPI consumer on **18080** | Prove end-to-end wiring without another repo |
+
+Profiles that are off show as `[--]` in `scripts/verify.sh` rather than failing the core gate. Connectivity tests for optional services **skip** when their port is down.
+
+More clouds and services will be added the same way: new profile, documented ports, consumer env vars, smoke test that skips when off.
+
+---
+
+## Consumer contract
+
+The product surface for client repos is **`sandbox.env.example`**.
+
+1. Copy **only** the variables your app needs.
+2. Names may differ per stack (C# `Section:Key` vs Python `UPPER_SNAKE`) — **the values are what matter**.
+3. Run the client on the **same host** that publishes Docker ports (`localhost` / `127.0.0.1` from the host; Docker service names from containers).
+4. Moving to a real cloud sandbox later is a **connection-string / endpoint swap** — no application code change if you only configured env.
+
+Highlights:
+
+- **Azurite** — full connection string with explicit `BlobEndpoint` / `QueueEndpoint` / `TableEndpoint` on `127.0.0.1:10000/10101/10002` (Python’s `azure-storage-blob` needs this; `UseDevelopmentStorage=true` alone is not enough).
+- **Service Bus** — emulator connection string with `UseDevelopmentEmulator=true`; entities are those declared in `infra/Config.json` (`app-work-queue`, `dev-ingestion-queue`, `emailrequest`, `app-events`).
+- **Azure OpenAI / Foundry** — `http://127.0.0.1:8090`, any API key (ignored), any deployment name, any `api-version`.
+- **App SQL** — PGlite HTTP at `http://127.0.0.1:5433` (optional PG-wire `postgresql://locadev:locadev@127.0.0.1:5432/locadev` if enabled). **Not** the Service Bus internal MSSQL.
+- **AWS** — `AWS_ENDPOINT_URL=http://127.0.0.1:4566`, keys `test`/`test`, region `us-east-1` (with profile `aws`).
+- **Topaz** — REST authorizer on `http://127.0.0.1:8484`.
+- **Redis** — host `127.0.0.1:6380`, containers `redis:6379`.
+
+---
+
+## Bridge backends (Azure OpenAI surface)
+
+The **bridge** presents Azure OpenAI–shaped URLs:
+
+- `POST /openai/deployments/{deployment}/chat/completions`
+- `POST /openai/deployments/{deployment}/embeddings`
+
+| `CHAT_BACKEND` / `EMB_BACKEND` | Behavior | Use when |
+|---|---|---|
+| **`fake`** (default) | Deterministic chat + hash-based embeddings | CI and default local tests |
+| **`ollama`** | Real model via `OLLAMA_BASE` (container or host) | Offline structured output |
+| **`claude-cli`** | Host `claude -p` (chat only; no embeddings API) | Best quality; **host-only** on Mac/Linux |
+
+Embeddings never route to Claude. Default `EMBED_DIM=1536` must match AI Search / PGlite vector demos. Backend failures return **502** naming the backend.
+
+Prove the client path with:
+
+```bash
+python bridge/harness.py   # uses openai.AzureOpenAI against the bridge
+```
+
+---
+
+## macOS notes
+
+- Run Docker Desktop and the stack on the **same Mac** that runs tests and client apps.
+- Prefer host **Ollama** with `OLLAMA_BASE=http://host.docker.internal:11434` and compose `extra_hosts: ["host.docker.internal:host-gateway"]` on the bridge when the container must reach the host.
+- There is **no** WSL requirement and no PowerShell-first path.
+- Cosmos (`cosmos` profile) is large and slow under Docker Desktop; raise memory if the emulator fails to stay up — tests skip when port **8081** is down.
+
+---
+
+## Make targets
+
+| Target | Purpose |
+|---|---|
+| `make start` | Interactive profile launcher |
+| `make up` | Core stack `up -d --build` |
+| `make teams` | Convenience for teams profile |
+| `make down` | Tear down (`ARGS=-v` to drop volumes) |
+| `make verify` | Health probes |
+| `make test` | Smoke tests |
+| `make logs` | Follow compose logs |
+
+---
+
+## Tests and demos
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip -q install -r tests/requirements.txt
+pytest -q tests
+# with teams up and ECHO_BOT_BRAIN empty:
+pytest -q tests/teams
+```
+
+- **`tests/`** — bare connectivity smokes (one file per service). Optional services skip when not running. Bridge tests use the real `openai.AzureOpenAI` client.
+- **`demos/`** — Topaz-gated app patterns (blob, Service Bus, PGlite, Cosmos, Foundry, S3). Policy demo users: `alice@example.com` (editor) allowed on writes; `bob@example.com` (viewer) denied.
+
+Run everything from the Docker **host**, not from inside a random container, so ports match `sandbox.env.example`.
+
+---
+
+## Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| Service Bus emulator fails to load config | In `infra/Config.json`, `Logging` must be a **sibling of `Namespaces` under `UserConfig`**, not nested inside a namespace |
+| Python blob client fails with short connection string | Use the **full** Azurite connection string from `sandbox.env.example` (explicit blob/queue/table endpoints) |
+| Service Bus SDK times out on AMQP | Use `azure-servicebus` **≥ 7.13** (pinned **7.14.x** in tests); 7.12.x is too old for the emulator |
+| PGlite behaves oddly under heavy pools | Expected: PGlite is a local stand-in, not multi-writer server Postgres; plan a real server for staging concurrency |
+| Queue/topic missing on Service Bus | Emulator only creates entities in `infra/Config.json` — edit the file and restart; no runtime create-queue |
+| Bridge chat/embeddings 502 | Error body names the backend (`fake` / `ollama` / `claude-cli`); check `CHAT_BACKEND` / `EMB_BACKEND` and Ollama reachability |
+| Cosmos never becomes healthy | Give Docker Desktop more RAM/CPU; or leave profile off — tests skip |
+| `claude-cli` does nothing in the container | That mode is **host-only**; run the bridge on the host or use `fake` / `ollama` in Docker |
+| Port already in use | See the port table — queue is **10101** and Redis is **6380** specifically to dodge common locals |
+| MSSQL / Service Bus fail on Apple Silicon | Full `mssql/server:2022` often crashes under QEMU (`Invalid mapping of address`). The compose file uses **azure-sql-edge** as the SB backend (still unpublished, not an app DB). Give Docker enough RAM if edge is slow to start. |
+| Service Bus health stays `unhealthy` for ~30–60s | Expected while SQL_WAIT_INTERVAL and entity sync run; wait and re-check `curl http://127.0.0.1:5300/health` |
+
+Health checks only probe ports this stack publishes on `127.0.0.1`. They do not scan networks or firewalls.
+
+---
+
+## What this is not
+
+- Not a real Azure subscription, Entra tenant, or managed identity
+- Not Windows-first tooling
+- Not a vendor-specific product monorepo
+- Not a full multi-writer Postgres by default
+- Not a place to embed external sibling application monorepos
+
+---
+
+## Roadmap (non-blocking)
+
+- More cloud providers and services as profiles, same “pick what to spin up” model
+- Optional PG-wire gateway in front of PGlite for `psycopg` / Npgsql without HTTP
+- Full `postgres:16` + pgvector profile for heavy concurrency
+- Extra AWS services on MiniStack when a consumer flow needs them
+- Optional Windows helpers that shell out to the same bash scripts
+
+---
+
+## License / EULAs
+
+Setting `ACCEPT_EULA=Y` in `.env` acknowledges the Microsoft EULAs for **SQL Server for Linux** and the **Service Bus emulator** (dev/test only, no SLA). Other images carry their own licenses (e.g. MiniStack MIT-shaped gateway).
