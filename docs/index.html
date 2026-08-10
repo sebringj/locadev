@@ -699,26 +699,26 @@
     <section id="workflow">
       <h2>The whole party (AI-driven)</h2>
       <p class="section-lead">
-        End-to-end automation except the human at the keyboard. Assumes a coding agent plus
-        <code>gh</code> / GitHub, <strong>Jira and/or Azure DevOps</strong>, and channel bots —
-        local fakes for practice, real APIs for work.
+        End-to-end automation except the human at the keyboard.
+        <strong>Browser-first:</strong> your signed-in Chrome session (no API keys for every SaaS) —
+        then site skills, grounding, local cloud, and <code>gh</code>.
       </p>
       <div class="grid">
         <article class="card">
-          <h3><span class="icon icon-amber">1</span> Gather</h3>
-          <p><strong>/web-requirements</strong> — AI plans, then browses. Signed-in pages: <strong>/chrome-debug-profile</strong> (CDP). Snapshots become citations; invent later.</p>
+          <h3><span class="icon icon-amber">1</span> Signed-in session</h3>
+          <p><strong>/chrome-debug-profile</strong> + Playwright on CDP — your SSO, cookies, apps. The foundation that worked across orgs.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-violet">2</span> Clarify in-channel</h3>
-          <p>Open questions go to <strong>Slack, Discord, or Teams</strong> — same shapes as production. Local fakes expose <code>/ui</code> and <code>/messages</code> so you can see the thread.</p>
+          <h3><span class="icon icon-violet">2</span> Gather anywhere</h3>
+          <p>Not only Jira fields: product UIs, <strong>chat threads</strong>, <strong>PDF/Excel</strong> in Teams/Slack, wikis. <strong>/web-requirements</strong> plans, then snapshots.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-blue">3</span> Ticket the truth</h3>
-          <p>Update <strong>Jira</strong> and/or <strong>Azure DevOps Boards</strong> (state, comments, acceptance) from channel + docs — via <code>./boards/board.sh</code>.</p>
+          <h3><span class="icon icon-blue">3</span> Boards in the browser</h3>
+          <p>Read/comment/transition <strong>Jira &amp; Azure DevOps</strong> in the UI you already use. API CLI optional. Layer thin site skills for repeat flows.</p>
         </article>
         <article class="card">
           <h3><span class="icon icon-green">4</span> Ship with <code>gh</code></h3>
-          <p>Assumes <strong>GitHub CLI</strong> is installed and authed: branches, PRs, checks, reviews — agent-driven, human-approved.</p>
+          <p>Assumes <strong>GitHub CLI</strong> is installed and authed: branches, PRs, checks — agent-driven, human-approved.</p>
         </article>
         <article class="card">
           <h3><span class="icon icon-violet">5</span> Local cloud buffet</h3>
@@ -726,7 +726,7 @@
         </article>
         <article class="card">
           <h3><span class="icon icon-green">6</span> Grounded “ready”</h3>
-          <p><strong>Pre-hooks</strong> demand citations (<code>jira:KEY</code>, <code>ado:#id</code>). <strong>Post-hooks</strong> demand verify/tests/board/PR receipts.</p>
+          <p><strong>/grounding</strong> demands <strong>snapshot citations</strong> before decisions and receipts before ready — not vibes.</p>
         </article>
       </div>
     </section>
@@ -734,21 +734,22 @@
     <section id="boards">
       <h2>Jira + Azure DevOps</h2>
       <p class="section-lead">
-        First-class work boards. Config in <code>.grok/local/boards.json</code>; tokens in env only.
-        Details: <a href="https://github.com/gtfodevs/locadev/blob/main/boards/README.md" target="_blank" rel="noopener noreferrer">boards/README.md on GitHub</a>.
+        <strong>Default: browser UI</strong> via CDP (no tokens). Optional REST CLI when headless.
+        Details: <a href="https://github.com/gtfodevs/locadev/blob/main/boards/README.md" target="_blank" rel="noopener noreferrer">boards/README.md</a>
+        · pattern: <a href="https://github.com/gtfodevs/locadev/blob/main/docs/browser-skills.md" target="_blank" rel="noopener noreferrer">browser-skills.md</a>.
       </p>
       <div class="grid">
         <article class="card">
-          <h3><span class="icon icon-blue">Jira</span></h3>
-          <p>Cloud/Server REST: get, comment, transition, JQL search. Cite as <code>jira:PROJ-123</code>. Token: <code>JIRA_API_TOKEN</code>.</p>
+          <h3><span class="icon icon-amber">Browser</span></h3>
+          <p>Open Jira/ADO in your Chrome session. Read AC, comments, attachments. Comment &amp; transition in the UI. Snapshot for citations.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-violet">ADO</span></h3>
-          <p>Azure DevOps work items: get, comment, state patch, WIQL search. Cite as <code>ado:#42</code>. PAT: <code>AZURE_DEVOPS_EXT_PAT</code>.</p>
+          <h3><span class="icon icon-blue">Jira / ADO API</span></h3>
+          <p>Optional: <code>./boards/board.sh</code> with <code>JIRA_API_TOKEN</code> / <code>AZURE_DEVOPS_EXT_PAT</code> when you want the CLI path.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-amber">CLI</span></h3>
-          <p><code>./boards/board.sh providers|get|comment|transition|search|url</code> — auto-detects key shape; <code>--provider</code> to force.</p>
+          <h3><span class="icon icon-violet">Site skills</span></h3>
+          <p>Repeatable org flows as thin skills <em>on top of</em> chrome-debug + Playwright — not a new OAuth app per tool.</p>
         </article>
       </div>
     </section>
@@ -801,24 +802,25 @@
     </section>
 
     <section id="browser">
-      <h2>Browser skills (what they mean)</h2>
+      <h2>Browser-first (the proven stack)</h2>
       <p class="section-lead">
-        Three different jobs — don’t mix them up.
-        Full map: <a href="https://github.com/gtfodevs/locadev/blob/main/docs/browser-skills.md" target="_blank" rel="noopener noreferrer">docs/browser-skills.md</a>
-        (or <a href="./browser-skills.md">local copy</a> when browsing this site).
+        Stack <strong>chrome-debug + Playwright</strong>, then build site skills on top — drive tools you already use
+        (boards, chat, PDFs) without API keys. Full map:
+        <a href="https://github.com/gtfodevs/locadev/blob/main/docs/browser-skills.md" target="_blank" rel="noopener noreferrer">docs/browser-skills.md</a>
+        · <a href="./browser-skills.md">local</a>.
       </p>
       <div class="grid">
         <article class="card">
-          <h3><span class="icon icon-amber">📋</span> web-requirements</h3>
-          <p><strong>Research the product.</strong> AI-first plan, then Playwright snapshots → requirements doc under <code>.grok/local/requirements/</code>. Feeds pre-decision citations.</p>
-        </article>
-        <article class="card">
           <h3><span class="icon icon-violet">🔐</span> chrome-debug-profile</h3>
-          <p><strong>Your logged-in session.</strong> Profile work-copy + CDP on <code>:9222</code>. Use when docs/admin UIs need SSO — not for CI e2e.</p>
+          <p><strong>Base session.</strong> Work-copy of your Chrome + CDP <code>:9222</code>. SSO, cookies, Jira, Teams — the login problem solved once.</p>
         </article>
         <article class="card">
-          <h3><span class="icon icon-green">🧪</span> playwright</h3>
-          <p><strong>Prove the UI you built.</strong> Clean Chromium e2e after implement. Post-ready receipt — not a requirements substitute.</p>
+          <h3><span class="icon icon-green">🧪</span> playwright (session)</h3>
+          <p><strong>Drive that session.</strong> Click boards, open chat PDFs/Excel, capture pages. Clean Chromium is only for <em>your app’s</em> CI e2e later.</p>
+        </article>
+        <article class="card">
+          <h3><span class="icon icon-amber">📋</span> web-requirements + site skills</h3>
+          <p><strong>Gather &amp; specialize.</strong> AI plans, then snapshots under <code>.grok/local/requirements/</code>. Org skills layer on the same CDP base.</p>
         </article>
       </div>
     </section>
@@ -869,7 +871,7 @@
         </div>
         <div class="step">
           <h3>3 · Loop with hooks</h3>
-          <p>Gather → clarify → Jira/ADO → code → <code>pre-decision</code> / <code>post-ready</code> → PR. You type; AI drives.</p>
+          <p>Browser gather (chat/PDF/tickets) → cite → code → ready. You type; AI drives the session.</p>
         </div>
       </div>
       <div class="hero-actions" style="margin-top: 1.5rem;">

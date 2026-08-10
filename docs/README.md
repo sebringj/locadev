@@ -6,11 +6,11 @@ Static landing page for **locadev**.
 
 The site may be served from **GitHub Pages** or a **custom subdomain**. The page uses **absolute GitHub URLs** (clone, README, issues, boards/hooks docs) so a pretty domain never looks like a disconnected product without a repo.
 
-**Positioning:** *You type. AI runs the rest.* — full AI workflow (gather via **browser skills** → clarify in Slack/Discord/Teams → **Jira + ADO boards** → `gh` PRs) + desk-hosted local cloud + **pre/post hooks**.
+**Positioning:** *You type. AI runs the rest.* — **browser-first** (chrome-debug + Playwright + site skills; no API keys required for boards/chat) → gather from UIs/chat/PDF/Excel → grounding → local cloud → `gh`.
 
 | Doc | Topic |
 |-----|--------|
-| [browser-skills.md](./browser-skills.md) | web-requirements vs chrome-debug-profile vs playwright |
+| [browser-skills.md](./browser-skills.md) | **Proven pattern**: session + Playwright + layered skills |
 | [../boards/README.md](../boards/README.md) | Jira + Azure DevOps |
 | [../hooks/README.md](../hooks/README.md) | Pre/post grounding |
 

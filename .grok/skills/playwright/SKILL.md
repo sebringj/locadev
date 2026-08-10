@@ -9,20 +9,27 @@ metadata:
 user-invocable: true
 ---
 
-# /playwright — e2e UI proof (locadev)
+# /playwright — browser automation (locadev)
 
-**Means:** prove the **UI you built**. Feeds **`/grounding` post-ready**, not pre-decision research.
+**Two modes** (both use this skill family):
+
+| Mode | Browser | Purpose |
+|------|---------|---------|
+| **Session (workflow default)** | `connectOverCDP` after `/chrome-debug-profile` | Boards, chat, PDF/Excel, internal tools — **no API keys** |
+| **CI / app e2e** | Clean Chromium | Prove **your** app UI after implement → post-ready |
+
+Org success pattern: chrome-debug + Playwright, then **site skills** for repeat flows. See `docs/browser-skills.md`.
 
 Full discipline: `~/.grok/skills/playwright/SKILL.md`.
 
 ## Locadev rules
 
-| Intent | Skill |
-|--------|-------|
-| Gather product requirements from web | `/web-requirements` |
-| Signed-in product docs | `/chrome-debug-profile` then `/web-requirements` |
-| Smoke / e2e the app under test | **`/playwright`** (this) |
-| Claim ready | `/grounding` post-ready with e2e evidence |
+| Intent | Approach |
+|--------|----------|
+| Gather from signed-in UIs / chat / attachments | CDP + this skill or `/web-requirements` |
+| Org-specific click paths | Site skill **on top of** chrome-debug + Playwright |
+| Smoke / e2e the app under test | Clean Chromium e2e |
+| Claim ready | `/grounding` with snapshot or e2e evidence |
 
 ## Quick path
 

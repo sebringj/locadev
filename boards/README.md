@@ -2,16 +2,33 @@
 
 locadev’s AI workflow updates **real work boards**, not only GitHub issues.
 
+## Preferred: browser-first (no API keys)
+
+The pattern that worked across orgs: **`/chrome-debug-profile` + Playwright** (and thin **site skills** on top) using the **user’s signed-in Chrome session**.
+
+- Open Jira / ADO in the browser you already use  
+- Read description, AC, comments, **attachments**  
+- Comment / transition **in the UI** when asked  
+- Snapshot → cite in **`/grounding`**  
+
+Requirements often are **not** fully structured in the ticket — they live in chat PDFs, Excel, wiki links. Browser skills can open those; API tokens usually cannot. Full story: **`docs/browser-skills.md`**.
+
+**Never invent** keys/ids. Cite what you saw (`jira:PROJ-123`, `ado:#42`, or snapshot paths).
+
+---
+
+## Optional: API CLI (this folder)
+
+Use when headless, CDP unavailable, or the user wants tokens. Not the default interactive path.
+
 | Provider | Product | Typical IDs | Auth |
 |----------|---------|-------------|------|
 | **jira** | Atlassian Jira Cloud / Server | `PROJ-123` | email + API token |
 | **ado** | Azure DevOps Boards | numeric work item id `42` | Personal Access Token (PAT) |
 
-Agents: prefer this CLI (or MCP that hits the same APIs). **Never invent** keys/ids. Cite board state in **pre-decision** / **post-ready** hooks (`jira:PROJ-123`, `ado:#42`).
-
 ---
 
-## Setup (local-config)
+## Setup (local-config, API path only)
 
 ```bash
 cp boards/config.example.json .grok/local/boards.json

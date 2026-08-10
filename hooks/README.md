@@ -27,26 +27,29 @@ Use when the next step **commits** direction: stack choice, ticket wording, PR s
 
 | Source type | Examples | How to cite |
 |-------------|----------|-------------|
-| Web / docs | Product docs, ADRs, **web-requirements** snapshots | URL + quote or `.grok/local/requirements/...` path |
-| Channel truth | Slack / Discord / Teams replies | Channel + message id / `/messages` dump / UI screenshot |
-| Ticket | **Jira** issue, **Azure DevOps** work item, GitHub issue | `jira:PROJ-123`, `ado:#42`, or GH `#n` + current status/fields |
+| Browser snapshots | Pages, **Jira/ADO UI**, **chat threads**, **PDF/Excel** opened in Chrome CDP | `.grok/local/requirements/...` path + quote |
+| Web / docs | Product docs, ADRs | URL + quote or snapshot path |
+| Channel truth | Slack / Discord / Teams (browser or local `/messages`) | Snapshot, msg ref, or UI dump |
+| Ticket | Jira / ADO / GitHub (UI or optional API) | `jira:PROJ-123`, `ado:#42`, GH `#n` + state |
 | Code / repo | Spec, tests, `sandbox.env.example` | Path + line or commit |
 | Local cloud | `make verify`, playground, captured mail/messages | Command output or endpoint |
+
+**Prefer browser snapshots** from the signed-in session over retyping what a ticket “probably” says. Specs often live in chat PDFs/Excel — cite those captures.
 
 ### Agent protocol
 
 1. List the **decision** in one sentence.
-2. List **citations** (URLs, issue keys, message refs, file paths). Prefer concrete quotes over vibes.
+2. List **citations** (snapshot paths, URLs, issue keys). Prefer concrete quotes over vibes.
 3. Run `./hooks/pre-decision.sh` (or fill `hooks/pre-decision.checklist`).
-4. Only then: plan, call boards (`./boards/board.sh` for Jira/ADO)/`gh`/channel APIs, or implement.
+4. Only then: implement, update boards (browser UI first; `./boards/board.sh` optional), `gh`, etc.
 
-Fail closed: if sources conflict or are missing, **ask the channel** or **browse again** — don’t “assume and ship”.
+Fail closed: if sources conflict or are missing, **browse again** (CDP) or **ask the channel** — don’t “assume and ship”.
 
 Env (optional):
 
 ```bash
-export LOCADEV_CITATIONS="https://docs.example/api; jira:PROJ-123; ado:#42; slack:#dev msg ts=..."
-export LOCADEV_DECISION="Use Azurite for blob uploads in the local path"
+export LOCADEV_CITATIONS=".grok/local/requirements/run-1/jira.md; .grok/local/requirements/run-1/teams-pdf.md"
+export LOCADEV_DECISION="Use Azurite for blob uploads per ticket + PDF field list"
 ./hooks/pre-decision.sh
 ```
 
@@ -85,16 +88,17 @@ export LOCADEV_EVIDENCE="verify:ok; pytest:12 passed; gh:PR #42; jira:PROJ-123 D
 
 ## Toolchain assumptions (host)
 
-Agents may assume these exist when the user is on a full AI workflow machine (warn if missing, don’t invent tokens):
+Agents may assume these exist when the user is on a full AI workflow machine (warn if missing; **don’t invent tokens** — prefer the user’s browser session):
 
 | Tool | Role |
 |------|------|
 | **AI coding agent** (Grok / Claude / Cursor / …) | Human types; agent drives the loop |
+| **`chrome-debug-profile` + Playwright** | **Primary** path to Jira/ADO/chat/docs/PDF/Excel (signed-in session) |
+| **Site skills** on CDP | Org-specific UI flows without API keys |
 | **`gh`** + GitHub auth | Issues, PRs, checks, reviews |
-| **Jira** and/or **Azure DevOps Boards** | Work items via `./boards/board.sh` (config in `.grok/local/boards.json`) |
-| **Slack / Discord / Teams** | Clarify requirements in-channel (local fakes via compose profiles, or real workspaces) |
+| **`./boards/board.sh`** | Optional Jira/ADO API when not using the browser |
+| **Slack / Discord / Teams** | Real UI via browser, or local compose fakes |
 | **Docker + locadev** | Local Azure/AWS-shaped resources |
-| **Browser / Playwright** (optional) | Gather requirements from UIs, signed-in CDP |
 
 Local channel fakes (practice the same APIs offline):
 

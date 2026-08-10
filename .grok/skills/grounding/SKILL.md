@@ -14,7 +14,9 @@ argument-hint: pre-decision | post-ready
 
 # /grounding — citations before decide & ready
 
-**locadev** AI workflow gate. You (agent) must not invent product facts or claim ready without evidence.
+**locadev** AI workflow gate. Prefer **browser snapshots** (chrome-debug + Playwright) as citations — including chat PDFs/Excel and Jira/ADO UI — not invented summaries. You must not claim ready without evidence.
+
+API board CLIs are optional; snapshot paths from the signed-in session are first-class citations.
 
 | Gate | When | Script |
 |------|------|--------|

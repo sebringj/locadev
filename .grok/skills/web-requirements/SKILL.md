@@ -13,13 +13,15 @@ user-invocable: true
 
 # /web-requirements — gather (locadev)
 
-**Means:** research the **product** (not e2e tests). Output feeds **`/grounding` pre-decision**.
+**Means:** research requirements from **anywhere the browser can open** — not only marketing docs or Jira fields.
 
-Canonical long form also at: `~/.grok/skills/web-requirements/SKILL.md` (scripts live there).
+Include when relevant: product UIs, **Slack/Teams/Discord threads**, **PDF/Excel/Word** opened from chat or SharePoint, Confluence, ticket screens. Prefer **`/chrome-debug-profile` + CDP** so you don’t need SaaS API keys.
+
+Output feeds **`/grounding` pre-decision**. Canonical long form: `~/.grok/skills/web-requirements/SKILL.md`.
 
 ## Phase 1 — AI first (no browser yet)
 
-Produce: goal, auth need (public vs signed-in), ordered URL list, questions to extract, success criteria. Confirm if auth is unclear.
+Produce: goal, auth need (public vs signed-in), ordered list of **URLs / channels / attachments**, questions to extract, success criteria. Ask where the truth lives if unclear (ticket vs chat PDF vs wiki).
 
 ## Phase 2 — Browser
 

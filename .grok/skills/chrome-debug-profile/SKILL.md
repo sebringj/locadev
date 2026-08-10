@@ -12,7 +12,11 @@ user-invocable: true
 
 # /chrome-debug-profile — signed-in session (locadev)
 
-**Means:** auth **pipe** for private pages. Does **not** write the requirements doc by itself — load **`/web-requirements`** after CDP is up.
+**Means:** the **base session** for the whole AI workflow — not a niche “login helper.”
+
+Proven org pattern: **this skill + Playwright**, then **site skills on top**. Drive Jira, ADO, Slack, Teams, Confluence, chat **PDF/Excel**, etc. with the user’s real SSO. **Prefer this over inventing API keys** for every service.
+
+Does **not** alone write the requirements doc — pair with **`/web-requirements`** or Playwright captures after CDP is up.
 
 Canonical scripts: `~/.grok/skills/chrome-debug-profile/`.
 

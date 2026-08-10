@@ -1,117 +1,173 @@
-# Browser skills — meaning in the locadev AI workflow
+# Browser-first workflow — the proven pattern
 
-Browser skills are **how the agent gathers and proves truth from the web** before inventing stack choices, board updates, or code. They are not optional fluff; they feed **citations** into pre-decision hooks and often **acceptance notes** on Jira/ADO.
+What worked in **multiple orgs** (and what locadev is built around):
 
 ```text
-  /web-requirements  (+ /chrome-debug-profile if signed-in)
-           │
-           ▼
-  snapshots under .grok/local/requirements/
-           │
-           ▼
-  requirements doc + open questions
-           │
-     ┌─────┴──────┐
-     ▼            ▼
-  clarify in    pre-decision citations
-  Slack/…       (paths, URLs, quotes)
-     │            │
-     └─────┬──────┘
-           ▼
-  boards (Jira / ADO) + local cloud + implement
-           │
-           ▼
-  /playwright (e2e)  →  post-ready receipts
+  chrome-debug-profile  +  playwright
+            │
+            ▼
+   signed-in Chrome (your session: SSO, cookies, apps)
+            │
+            ▼
+   site / product skills layered on top
+   (Jira UI, ADO boards, Slack/Teams chat, Confluence, PDFs…)
+            │
+            ▼
+   snapshots + citations  →  /grounding  →  code + local cloud
 ```
 
----
+**Primary path = drive the real product UIs in the user’s browser.**  
+You already have access to Jira, Azure DevOps, Slack, Teams, SharePoint, chat attachments, etc.  
+**You do not need API keys for every service** when the agent can click and read what you already see.
 
-## Skill map (what each one *means*)
-
-| Skill | Slash | Meaning | When | Output that counts as **citation** |
-|-------|-------|---------|------|-------------------------------------|
-| **web-requirements** | `/web-requirements` | **Gather** product/docs requirements from live pages — **AI plans first**, then Playwright browses | Start of a feature/integration; “what does this product actually do?” | `.grok/local/requirements/<run>/…` page snapshots + requirements md |
-| **chrome-debug-profile** | `/chrome-debug-profile` | **Signed-in Chrome** via CDP (your cookies/SSO on a **work copy** of the profile) | Docs or admin UIs behind login | Same as above, but pages only visible when authenticated |
-| **playwright** | `/playwright` | **E2E / UI proof** against an app (usually **clean** Chromium, CI-friendly) | After implement; smoke “does the UI work?” | test report, screenshots under `test-results/` → post-ready evidence |
-
-### One-liners
-
-- **web-requirements** = research the *product* (requirements).  
-- **chrome-debug-profile** = *how* you open private pages (session).  
-- **playwright** = *test* the app you built (verification).
-
-Do **not** use `/playwright` as a substitute for requirements gathering.  
-Do **not** use clean Chromium for tenant-only admin UIs — use CDP.
+API CLIs (`./boards/board.sh`, tokens, PATs) are **optional accelerators** — not the main integration story.
 
 ---
 
-## Auth modes
+## Why browser-first wins
 
-| Mode | Skill stack | Browser |
-|------|-------------|---------|
-| Public docs / marketing | `web-requirements` only | Clean Chromium (`--clean`) |
-| Logged-in product / internal docs | `chrome-debug-profile` **then** `web-requirements` | Chrome work profile + `connectOverCDP` (`http://127.0.0.1:9222`) |
-| CI / app e2e | `playwright` | Clean Chromium (no personal profile) |
+| Reality | Browser path | API-key path |
+|---------|--------------|--------------|
+| You’re already logged into Jira / ADO / Slack | Use that session via CDP | Mint tokens, scopes, rotate secrets |
+| Spec lives in a **chat PDF** or **Excel** attached in Teams | Open the thread, open the file, snapshot | Often no API, or different product |
+| Requirements are half in Confluence, half in a ticket comment | Navigate + capture both | Multiple APIs, incomplete fields |
+| Org blocks “bot” API apps | Human session still works | Stuck |
+| New SaaS every quarter | New thin **site skill** on the same CDP base | New OAuth app each time |
 
-**CDP** = Chrome DevTools Protocol (remote debugging). Not CSP.
+Requirements gathering is **not only structured tickets**. Typical successful captures:
 
-Setup (signed-in):
+- Jira / ADO work item **screens** (description, AC, comments, attachments)
+- Slack / Teams / Discord **threads** (decisions, links, @mentions)
+- **PDF / Excel / Word** opened from chat or SharePoint in Chrome
+- Confluence / Notion / wiki pages
+- Product admin UIs and vendor docs (signed-in)
+- Email web UIs when that’s where the ask landed
 
-```bash
-# Quit normal Chrome first
-chrome-profile-sync    # copy profile → work dir
-chrome-debug           # listen on :9222
-curl -s http://127.0.0.1:9222/json/version
+Store evidence under **`.grok/local/requirements/`** (gitignored) and cite paths in **`/grounding`**.
+
+---
+
+## Foundation skills (stack these)
+
+| Layer | Skill | Job |
+|-------|--------|-----|
+| **1 · Session** | **`/chrome-debug-profile`** | Work **copy** of the user’s Chrome profile + CDP (`:9222`). SSO, cookies, extensions as the user. |
+| **2 · Automation** | **`/playwright`** (attach via `connectOverCDP`) | Drive pages, click, extract text, screenshot. Same skill family used for e2e — **session mode** for work, **clean Chromium** for CI e2e of *your* app. |
+| **3 · Gather** | **`/web-requirements`** | AI plans first, then browse + synthesize requirements doc. Prefer CDP when anything is private. |
+| **4 · Site skills** | `sites/*` / org-specific skills | Thin skills **on top of** chrome-debug + playwright: “open our Jira project”, “read Teams channel X”, “export this board view”. |
+| **5 · Honesty** | **`/grounding`** | Pre-decision / post-ready citations from snapshots — not vibes. |
+
+### Two uses of Playwright (don’t conflate)
+
+| Mode | Browser | Purpose |
+|------|---------|---------|
+| **Session (default for workflow)** | Chrome via CDP (user profile work copy) | Boards, chat, PDFs, internal tools — **no API keys** |
+| **CI / app e2e** | Clean Chromium | Prove **locadev consumer / your app** UI after you built it |
+
+---
+
+## Build skills on top (org pattern)
+
+When a flow repeats (every sprint, every service):
+
+1. Keep **chrome-debug-profile** + **playwright** as the base (never re-solve login).
+2. Add `~/.grok/skills/sites/<slug>/SKILL.md` (or project `.grok/skills/…`) with:
+   - entry URL(s), ready selector, click paths
+   - what to snapshot for citations
+   - safety (read-only vs allowed writes)
+3. Invoke: load chrome-debug → ensure CDP → run site skill → cite → optional local cloud.
+
+Examples of site skills:
+
+- `jira-acme` — open issue, read AC, comment, transition **in the UI**
+- `ado-boards` — open work item, board column, discussion
+- `teams-spec` — open channel, open PDF/Excel preview, extract decisions
+- `confluence-adr` — pull ADR pages for pre-decision citations
+
+---
+
+## Optional API path (boards CLI)
+
+`./boards/board.sh` + `JIRA_API_TOKEN` / `AZURE_DEVOPS_EXT_PAT` is for when:
+
+- headless automation without a display, or  
+- the user prefers API over UI, or  
+- CDP isn’t available
+
+**Default recommendation for interactive AI workflow: browser UI first.**  
+See `boards/README.md` — browser-first section is the lead; CLI is secondary.
+
+---
+
+## Full loop (corrected)
+
+```text
+  you type
+      │
+      ▼
+  chrome-debug + playwright (signed-in)
+      │
+      ├── gather: web UIs, chat, PDF/Excel, tickets, wikis
+      ├── clarify: post/read in real Slack/Teams (or local fakes for practice)
+      └── update boards: click Jira/ADO in the browser (or board.sh if API)
+      │
+      ▼
+  pre-decision (/grounding) ← snapshot paths + quotes
+      │
+      ▼
+  implement + local cloud (make up / verify)
+      │
+      ▼
+  post-ready ← tests, verify, board/PR evidence (UI screenshot or API)
+      │
+      ▼
+  gh PR / say ready
 ```
 
-Local config (gitignored): `~/.grok/local/chrome-debug-profile.json`, `~/.grok/local/web-requirements.json`  
-(or project `.grok/local/…`). Templates live in each skill’s `config.example.json`.
-
----
-
-## Where this sits in the full loop
-
-| Step | Browser skill role |
-|------|--------------------|
-| **1 · Gather** | `/web-requirements` produces the requirements doc + snapshots |
-| **2 · Clarify** | Open questions from that doc go to Slack/Discord/Teams |
-| **3 · Pre-decision** | Cite snapshot paths / URLs / quotes — not vibes |
-| **4 · Boards** | Paste summary into `jira:…` / `ado:#…` comments; acceptance criteria from requirements |
-| **5 · Local cloud + code** | Map integrations to locadev profiles (Azurite, fake channels, …) |
-| **6 · Post-ready** | `/playwright` (or verify/tests) supplies UI receipts if the change is user-facing |
-
-### Citation examples (hooks)
+### Citation examples
 
 ```bash
-LOCADEV_CITATIONS='.grok/local/requirements/run-1/page-01/page.md; https://docs.example/api; jira:PROJ-12' \
-LOCADEV_DECISION='Use Azurite for blob path per product docs' \
+# Snapshots beat inventing "what the ticket said"
+LOCADEV_CITATIONS='.grok/local/requirements/run-3/teams-pdf-page.md; .grok/local/requirements/run-3/jira-PROJ-12.md' \
+LOCADEV_DECISION='Match AC in Jira; attachment PDF is source for field list' \
   ./hooks/pre-decision.sh
-
-LOCADEV_EVIDENCE='verify:ok; playwright:e2e smoke passed; jira:PROJ-12 In Progress; gh:PR #8' \
-LOCADEV_READY_CLAIM='Blob upload ready for review' \
-  ./hooks/post-ready.sh
 ```
 
 ---
 
-## Agent rules (browser)
+## Setup (signed-in base)
 
-1. **AI first** for requirements: plan URLs + questions **before** opening the browser.  
-2. Prefer **read-only** navigation on signed-in CDP (full account power).  
-3. Store captures under **`.grok/local/requirements/`** (never commit).  
-4. **Do not invent** product facts that were not in snapshots, user text, or tickets.  
-5. Map discovered cloud/integrations to **locadev** stand-ins when drafting the plan.  
-6. After UI work, use **playwright** for proof — not another ad-hoc browse unless gathering more requirements.
+```bash
+# Quit normal Chrome first (Cmd+Q)
+chrome-profile-sync
+chrome-debug
+curl -s http://127.0.0.1:9222/json/version   # must succeed
+```
+
+Then attach Playwright with `chromium.connectOverCDP('http://127.0.0.1:9222')` — do **not** `launch()` a blank browser for board/chat work.
+
+Local config (gitignored): `~/.grok/local/chrome-debug-profile.json`  
+Template: skill `config.example.json`.
 
 ---
 
-## Related docs
+## Agent rules
+
+1. **Prefer browser session** over inventing API integrations for SaaS the user already uses.  
+2. **AI plan first** for gather; then browse.  
+3. Requirements may live in **chat + attachments**, not only Jira fields — look there.  
+4. Layer **site skills** on chrome-debug; don’t duplicate login in every skill.  
+5. Cite **snapshot paths**; never invent ticket text.  
+6. Read-only by default on signed-in CDP; only write (comment/transition) when the user asked.  
+7. Clean Playwright e2e is for **your app** after implement — not a substitute for signed-in gather.
+
+---
+
+## Related
 
 | Doc | Role |
 |-----|------|
-| [hooks/README.md](../hooks/README.md) | Pre/post grounding gates |
-| [boards/README.md](../boards/README.md) | Jira + ADO |
-| [AGENTS.md](../AGENTS.md) | Full agent loop |
-| `~/.grok/skills/web-requirements/SKILL.md` | Requirements skill detail |
-| `~/.grok/skills/chrome-debug-profile/SKILL.md` | CDP / profile skill detail |
-| `~/.grok/skills/playwright/SKILL.md` | E2E skill detail |
+| [hooks/README.md](../hooks/README.md) | Pre/post grounding |
+| [boards/README.md](../boards/README.md) | Browser-first boards + optional API CLI |
+| [AGENTS.md](../AGENTS.md) | Agent loop |
+| `/chrome-debug-profile` · `/playwright` · `/web-requirements` · `/grounding` | Slash skills |

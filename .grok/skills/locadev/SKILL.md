@@ -1,37 +1,43 @@
 ---
 name: locadev
 description: >
-  Operate the locadev full AI workflow and local cloud stack: gather requirements
-  (browser skills), clarify via Slack/Discord/Teams, update Jira/ADO boards, ship
-  with gh, Docker Azure/AWS-shaped resources, pre/post grounding citations.
-  Use when the user says /locadev, "start locadev", "local cloud", azurite,
-  service bus, "make up", sandbox.env, or works in this repo on stack/workflow.
+  Operate the locadev full AI workflow and local cloud stack. Browser-first:
+  chrome-debug-profile + Playwright (user session, no API keys for boards/chat),
+  site skills on top, gather from UIs/chat/PDF/Excel, grounding citations,
+  Docker Azure/AWS-shaped resources, optional boards CLI. Use for /locadev,
+  "start locadev", "local cloud", azurite, browser-first workflow, make up.
 metadata:
-  short-description: "locadev AI workflow + local cloud"
+  short-description: "Browser-first AI workflow + local cloud"
 user-invocable: true
 ---
 
-# /locadev — AI workflow + local cloud
+# /locadev — browser-first AI workflow + local cloud
 
-Human **types/approves**. Agent runs the loop:
+Human **types/approves**. Agent prefers the **user’s signed-in Chrome** over API keys.
+
+## Pattern that worked in multiple orgs
 
 ```text
-gather → clarify (channel) → pre-decision (citations) → local cloud + code
-  → boards (Jira|ADO) + gh → post-ready (receipts) → ready
+chrome-debug-profile + playwright
+  → site skills (Jira UI, Teams chat, PDF/Excel, ADO…)
+  → snapshots → /grounding
+  → code + local cloud → gh / ready
 ```
 
-## Slash skills in this repo (use these)
+**Do not default to “mint Jira/Slack API tokens.”** If the user is logged in, drive that session via CDP. Requirements often live in **chat attachments (PDF/Excel)** and threads — not only structured Jira fields.
 
-| Skill | Slash | Job |
-|-------|-------|-----|
-| **grounding** | `/grounding` | Pre-decision + post-ready **citations** gates |
-| **web-requirements** | `/web-requirements` | Gather requirements from the web (AI plan → browse) |
-| **chrome-debug-profile** | `/chrome-debug-profile` | Signed-in Chrome via CDP |
-| **playwright** | `/playwright` | UI e2e proof (post-ready) |
-| **external-docker-drive** | `/external-docker-drive` | Docker disk on external drive |
-| **locadev** | `/locadev` | This skill — stack ops + map |
+Full write-up: **`docs/browser-skills.md`**.
 
-Docs: `docs/browser-skills.md`, `hooks/README.md`, `boards/README.md`, `AGENTS.md`, `README.md`.
+## Slash skills
+
+| Skill | Job |
+|-------|-----|
+| `/chrome-debug-profile` | **Base session** — profile work copy + CDP |
+| `/playwright` | Drive CDP (workflow) or clean Chromium (app e2e) |
+| `/web-requirements` | AI plan → gather → requirements doc |
+| `/grounding` | Pre-decision + post-ready citations |
+| `/locadev` | This map + stack ops |
+| `/external-docker-drive` | Docker disk on external drive |
 
 ## Stack quick path
 
@@ -39,39 +45,25 @@ Docs: `docs/browser-skills.md`, `hooks/README.md`, `boards/README.md`, `AGENTS.m
 start-docker          # if Docker on external drive
 make up && make verify
 make test
-# optional profiles: ./scripts/start.sh  or  docker compose -p locadev --profile slack up -d
 ```
 
-Consumer env contract: `sandbox.env.example`. Compose project: **`locadev`**.
+Consumer env: `sandbox.env.example`. Project name: **`locadev`**.
 
-## Boards (Jira + ADO)
+## Boards
 
-```bash
-cp boards/config.example.json .grok/local/boards.json   # once
-export JIRA_API_TOKEN=…   AZURE_DEVOPS_EXT_PAT=…
-./boards/board.sh providers
-./boards/board.sh get PROJ-123
-./boards/board.sh get 42 --provider ado
-```
+- **Default:** Jira/ADO **in the browser** (CDP).  
+- **Optional API:** `./boards/board.sh` + tokens — see `boards/README.md`.
 
-## Grounding (always for decide / ready)
+## Grounding
 
 ```bash
-# Load /grounding skill, then:
-LOCADEV_DECISION='…' LOCADEV_CITATIONS='…' ./hooks/pre-decision.sh
+LOCADEV_DECISION='…' LOCADEV_CITATIONS='.grok/local/requirements/…; …' ./hooks/pre-decision.sh
 LOCADEV_READY_CLAIM='…' LOCADEV_EVIDENCE='…' ./hooks/post-ready.sh
 ```
 
-## Channels (local fakes)
-
-| Profile | See messages |
-|---------|----------------|
-| `slack` | http://127.0.0.1:8096/ui |
-| `discord` | http://127.0.0.1:8097/ui |
-| `teams` | GET :3979/api/messages |
-
 ## Non-negotiables
 
-- Project name / network **`locadev`**. App SQL = **PGlite** `:5433`, not SB MSSQL.
+- Browser session first for SaaS; API second.  
+- Never invent ticket/chat text — cite snapshots.  
+- App SQL = **PGlite** `:5433`, not SB MSSQL.  
 - Document emulator limits. Env-only client wiring.
-- Never invent board ids, PR numbers, or requirements not in citations.

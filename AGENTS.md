@@ -3,49 +3,46 @@
 This repo is **locadev**: a **full AI workflow** plus **local cloud resources**.
 
 - **You (human)** type and approve.
-- **You (agent)** gather requirements, clarify in Slack/Discord/Teams, update **Jira and/or Azure DevOps (ADO) boards**, use **`gh`** for GitHub, implement against desk-hosted Azure/AWS-shaped services, and only claim **ready** after hooks pass.
+- **You (agent)** drive work primarily through the **user’s signed-in browser** (`/chrome-debug-profile` + Playwright), gather requirements from **UIs, chat, PDFs, Excel, tickets**, update boards in that session (API keys optional), use **`gh`** for GitHub, implement against desk-hosted Azure/AWS-shaped services, and only claim **ready** after **`/grounding`** passes.
 
-Overview: `README.md`. Spec: `spec.md`. Hooks: `hooks/README.md`. Site: `docs/index.html`.
+Overview: `README.md`. Spec: `spec.md`. Hooks: `hooks/README.md`. Browser-first: **`docs/browser-skills.md`**. Site: `docs/index.html`.
 
 Skills are authored in **Grok skill format** (`.grok/skills/*/SKILL.md` + optional scripts/local-config). The content is ordinary agent instructions and is straightforward to adapt for Claude Code, Cursor, Codex, or any other LLM host that supports skills or project rules—see README “Agent skills format”.
 
-## Default agent loop
+## Default agent loop (browser-first)
 
 ```text
-gather → clarify (channel) → pre-decision (citations) → implement + local cloud
-       → tests/verify → board (Jira|ADO) + gh PR → post-ready (receipts) → say ready
+chrome-debug + playwright (signed-in session)
+  → gather (web, chat, PDF/Excel, Jira/ADO UI, wikis)
+  → clarify in-channel (real UI or local fakes)
+  → pre-decision (citations from snapshots)
+  → implement + local cloud
+  → board/PR evidence (UI or optional API) + gh
+  → post-ready → say ready
 ```
 
-1. **Gather** — docs, repo, **browser skills** (see below). Snapshot before inventing.
-2. **Clarify** — post open questions to Slack / Discord / Teams (local fakes or real). Prefer reading replies via `/messages` or API, not guessing.
-3. **Pre-decision hook** — before architecture choices, ticket rewrites, or large implement:
-
-   ```bash
-   LOCADEV_DECISION='…' LOCADEV_CITATIONS='url; jira:PROJ-1; ado:#42; path-or-msg-ref' ./hooks/pre-decision.sh
-   ```
-
-   Attach the same citations in chat. **Fail closed** if sources are missing or conflict — ask the channel again.
-4. **Local cloud** — `start-docker` if needed; `make up && make verify`; wire from `sandbox.env.example`.
-5. **Boards (Jira + ADO) + GitHub** — use **`./boards/board.sh`** (see `boards/README.md`). Auto-detect: `PROJ-123` → Jira, numeric id → ADO. Config: `.grok/local/boards.json`. Secrets: `JIRA_API_TOKEN`, `AZURE_DEVOPS_EXT_PAT`. Always `get` before `comment`/`transition`. Assume **`gh`** when shipping code. Warn if tools/auth missing; **never invent** keys/ids/tokens.
-6. **Post-ready hook** — before “done”, “ready for review”, or “ship”:
-
-   ```bash
-   LOCADEV_READY_CLAIM='…' LOCADEV_EVIDENCE='verify:ok; pytest:…; gh:PR #n; jira:KEY Done; ado:#42 Active' ./hooks/post-ready.sh
-   ```
-
-7. Only then claim ready. Checklists: `hooks/pre-decision.checklist`, `hooks/post-ready.checklist`.
+1. **Session** — load **`/chrome-debug-profile`**, ensure CDP (`curl :9222/json/version`). Prefer **work copy** of the user profile so SSO/cookies work. **Do not require API keys** for Jira/ADO/Slack/Teams if the browser session already has them.
+2. **Gather** — **`/web-requirements`** (AI plan first) and/or Playwright over CDP. Look beyond structured tickets: **chat threads, PDF/Excel attachments, wiki pages**. Snapshot under `.grok/local/requirements/`.
+3. **Site skills** — for recurring orgs/flows, layer thin skills on chrome-debug + playwright (don’t re-solve login).
+4. **Clarify** — real Slack/Discord/Teams in the browser, or local fakes for practice.
+5. **Pre-decision** — **`/grounding`** / `./hooks/pre-decision.sh` with snapshot paths + quotes. Fail closed if sources conflict.
+6. **Local cloud** — `start-docker` if needed; `make up && make verify`; wire from `sandbox.env.example`.
+7. **Boards + GitHub** — **default: operate Jira/ADO in the signed-in browser**. Optional: `./boards/board.sh` + tokens when CDP isn’t available (see `boards/README.md`). Assume **`gh`** for PRs. Never invent keys/ids.
+8. **Post-ready** — tests/verify + evidence; only then say ready.
 
 ## Toolchain assumptions
 
 | Tool | Expectation |
 |------|-------------|
 | Coding agent | Primary driver of the workflow |
+| **`/chrome-debug-profile` + Playwright** | **Primary** access to SaaS (boards, chat, docs) via user session |
+| Site skills on top of CDP | Org-specific click paths (Jira project, Teams channel, …) |
 | `gh` + GitHub | Issues, PRs, checks when repo work ships |
-| **Jira** and/or **Azure DevOps Boards** | Work items via `./boards/board.sh` (or `jira` / `az boards` CLIs) |
-| Slack / Discord / Teams | Clarification threads (local profiles or real) |
+| `./boards/board.sh` | **Optional** API path for Jira/ADO |
+| Slack / Discord / Teams | Real UI via browser, or local compose fakes for practice |
 | Docker + compose | Local cloud + fakes |
 
-Local channel fakes (see messages land):
+Local channel fakes (practice offline):
 
 | Profile | UI / list |
 |---------|-----------|
@@ -55,19 +52,23 @@ Local channel fakes (see messages land):
 
 ## Browser skills (meaning)
 
-Full map: **`docs/browser-skills.md`**.
+Full map: **`docs/browser-skills.md`** (read this — it is the org-proven pattern).
 
 | Skill | Means | Use for |
 |-------|--------|---------|
-| **`web-requirements`** (`/web-requirements`) | AI plan **then** browse live docs/UIs → requirements doc | **Gather** phase; citations = `.grok/local/requirements/…` |
-| **`chrome-debug-profile`** (`/chrome-debug-profile`) | Signed-in Chrome **work copy** + CDP (`:9222`) | Private/tenant pages during gather (load **before** web-requirements) |
-| **`playwright`** (`/playwright`) | Clean-browser **e2e** tests | **Post-ready** UI proof — not a substitute for requirements |
+| **`chrome-debug-profile`** | Signed-in Chrome work copy + CDP | **Base session** for almost all external SaaS work |
+| **`playwright`** | Drive browser (CDP for workflow; clean Chromium for app e2e) | Automation + **post-ready** UI proof of *your* app |
+| **`web-requirements`** | AI plan → browse → requirements doc | **Gather** from any page/thread/attachment you can open |
+| Site skills | Thin layer on chrome-debug | Repeatable org flows without API keys |
+| **`grounding`** | Citation gates | Pre-decision / post-ready honesty |
 
 Rules:
 
-- Requirements → **web-requirements** (+ CDP if auth). E2E → **playwright**. Do not swap them.
-- Cite snapshot paths / URLs in **pre-decision**; cite e2e results in **post-ready**.
-- Never commit `.grok/local/requirements/**`. Prefer read-only nav on signed-in CDP.
+- **Browser session first**; API tokens second.  
+- Requirements may be in **chat + PDF/Excel**, not only Jira fields — open them.  
+- Build **site skills on top of** chrome-debug + playwright.  
+- Cite snapshot paths; never invent ticket or chat text.  
+- Never commit `.grok/local/requirements/**`.
 
 ## Docker disk (generic skill + local-config)
 
@@ -100,7 +101,8 @@ start-docker
 - Use `docker compose -p locadev` (see Makefile). macOS/Linux bash is the supported path.
 - **Do not skip pre/post hooks** when making committing decisions or declaring ready — citations and receipts are required.
 - **Do not invent** Jira keys, ADO work item ids, PR numbers, channel agreements, or `gh` output.
-- Prefer **`./boards/board.sh`** for Jira/ADO; cite results as `jira:KEY` or `ado:#id`.
+- Prefer **browser (CDP)** for Jira/ADO/chat; optional **`./boards/board.sh`** for API. Cite as snapshot paths or `jira:KEY` / `ado:#id`.
+- Prefer **browser session over inventing API keys** for SaaS the user already uses.
 
 ## Stack smoke workflow
 

@@ -23,64 +23,71 @@
 
 **You type. AI runs the rest.** Full AI workflow + local cloud on your desk.
 
+**Proven pattern (multiple orgs):** **`chrome-debug-profile` + Playwright**, then **site skills on top** — drive the **user’s signed-in browser** so Jira, ADO, Slack, Teams, Confluence, chat **PDFs/Excel**, etc. work **without minting API keys** for every service. API CLIs are optional.
+
 **locadev** is the loop where a coding agent does almost everything except the keyboard:
 
-1. **Gather** requirements (docs, UIs, signed-in browse)
-2. **Clarify** open questions in **Slack / Discord / Teams** (local fakes or real workspaces)
-3. **Update boards** — **Jira** and/or **Azure DevOps (ADO)** work items (plus GitHub issues when that’s the tracker)
-4. **Ship with `gh`** (PRs, checks — assumes GitHub CLI installed & authed)
+1. **Session** — signed-in Chrome work copy + CDP (`/chrome-debug-profile`)
+2. **Gather** — docs, UIs, **chat threads**, **PDF/Excel attachments**, tickets (not only structured Jira fields)
+3. **Clarify / update boards** — same browser session (or local channel fakes for practice)
+4. **Ship with `gh`** — PRs/checks
 5. **Summon local Azure/AWS-shaped resources** in Docker (env-only client wiring)
-6. **Pre/post hooks** — no big decisions and no “ready” without **citations and receipts**
+6. **Pre/post grounding** — citations from **snapshots**, not vibes
 
 You approve; the agent drives. Desk-hosted cloud sidekick means free offline iteration first, real cloud later. Same SDK shapes; swap env when you go live.
 
-Surfaces today: **Azure**, **AWS**, channel fakes, **Jira + ADO boards CLI**, more via profiles. You trade some fidelity for instant iteration — and we stay honest about the gaps. Hooks exist so the AI cannot paper over them.
+Surfaces today: **Azure**, **AWS**, channel fakes, browser-first boards, optional **boards API CLI**, more via profiles. Hooks keep the AI honest.
 
 | Piece | Where |
 |-------|--------|
 | Landing page | `docs/index.html` |
+| **Browser-first workflow** | [`docs/browser-skills.md`](docs/browser-skills.md) |
 | Hooks protocol | [`hooks/README.md`](hooks/README.md) |
-| Work boards (Jira + ADO) | [`boards/README.md`](boards/README.md) · `./boards/board.sh` |
-| Browser skills (gather / e2e) | [`docs/browser-skills.md`](docs/browser-skills.md) |
+| Work boards (browser + optional API) | [`boards/README.md`](boards/README.md) |
 | Agent rules | [`AGENTS.md`](AGENTS.md) |
 
 ---
 
-## AI workflow (agent-driven)
+## AI workflow (agent-driven, browser-first)
 
 ```text
-  you type ──► gather reqs ──► clarify (Slack/Discord/Teams)
-                    │                    │
-                    ▼                    ▼
-              pre-decision ◄── citations (docs, msgs, tickets)
-                    │
-                    ▼
-         implement + local cloud (make up / verify)
-                    │
-                    ▼
-         post-ready ◄── receipts (tests, verify, Jira|ADO, gh PR)
-                    │
-                    ▼
-              say ready / open PR
+  you type
+      │
+      ▼
+  chrome-debug + playwright (your SSO session)
+      │
+      ├── gather: web, Jira/ADO UI, chat, PDF/Excel, wikis
+      ├── clarify / update boards in the browser (no API keys required)
+      └── site skills layered for repeat org flows
+      │
+      ▼
+  pre-decision ◄── snapshot citations
+      │
+      ▼
+  implement + local cloud (make up / verify)
+      │
+      ▼
+  post-ready ◄── tests, verify, board/PR evidence
+      │
+      ▼
+  gh PR / say ready
 ```
 
 ### Work boards (Jira + Azure DevOps)
 
-Both providers are first-class. Config is local; tokens stay in env.
+**Default:** open Jira/ADO in signed-in Chrome via CDP; read/comment/transition in the UI; snapshot for citations.  
+**Optional API** when headless or preferred:
 
 ```bash
 cp boards/config.example.json .grok/local/boards.json   # edit org/project/email
-export JIRA_API_TOKEN=…              # Atlassian API token
-export AZURE_DEVOPS_EXT_PAT=…        # ADO PAT (Work Items R/W)
+export JIRA_API_TOKEN=…              # only if using API path
+export AZURE_DEVOPS_EXT_PAT=…
 
-./boards/board.sh providers
-./boards/board.sh get PROJ-123                 # Jira
-./boards/board.sh get 42 --provider ado        # ADO work item
-./boards/board.sh comment PROJ-123 "Clarified in #dev"
-./boards/board.sh transition 42 --provider ado "Active"
+./boards/board.sh get PROJ-123
+./boards/board.sh get 42 --provider ado
 ```
 
-Citation tokens for hooks: `jira:PROJ-123`, `ado:#42`. Full protocol: **`boards/README.md`**.
+See **`boards/README.md`** and **`docs/browser-skills.md`**.
 
 ### Toolchain assumptions
 
@@ -89,14 +96,13 @@ Warn if missing; do not invent credentials.
 | Tool | Role |
 |------|------|
 | Coding agent (Grok / Claude / Cursor / …) | Drives the loop |
+| **`chrome-debug-profile` + Playwright** | **Primary** SaaS access (user session — boards, chat, docs, attachments) |
+| **Site skills** on top of CDP | Org-specific flows without new API keys |
 | **`gh`** + GitHub auth | Issues, PRs, checks |
-| **Jira** and/or **Azure DevOps Boards** | Work items via `./boards/board.sh` (or `jira` / `az boards`) |
-| **Slack / Discord / Teams** | Clarify requirements in-channel |
+| **`./boards/board.sh`** | Optional Jira/ADO API |
+| **Slack / Discord / Teams** | Real UI via browser, or local fakes |
 | **Docker + this repo** | Local cloud + channel fakes |
-| **Browser skills** (optional but key for gather) | See [`docs/browser-skills.md`](docs/browser-skills.md) |
-| → `web-requirements` | AI-first requirements from live docs/UIs |
-| → `chrome-debug-profile` | Signed-in Chrome via CDP when pages need your login |
-| → `playwright` | E2E UI proof after implement (clean browser) |
+| **`web-requirements` / `grounding`** | Gather + citation gates |
 
 Local channel practice (message-visible):
 
